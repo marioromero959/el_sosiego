@@ -1,0 +1,327 @@
+.page-banner {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/assets/images/banner-about.jpg') no-repeat center center;
+  background-size: cover;
+  color: white;
+  padding: 120px 0 80px;
+  margin-bottom: 50px;
+  
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .lead {
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+}
+
+/* Story Section */
+.story-section {
+  .story-img {
+    position: relative;
+    z-index: 1;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      width: 100%;
+      height: 100%;
+      border: 5px solid var(--primary-color);
+      z-index: -1;
+    }
+  }
+}
+
+/* Values Section */
+.value-card {
+  background-color: white;
+  padding: 40px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-10px);
+  }
+  
+  .value-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+  }
+  
+  h4 {
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  
+  p {
+    color: var(--gray-dark);
+    margin-bottom: 0;
+  }
+}
+
+/* Timeline Section */
+.timeline {
+  position: relative;
+  padding: 20px 0;
+  margin-bottom: 30px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 4px;
+    margin-left: -2px;
+    background-color: var(--gray-medium);
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 60px;
+    
+    &::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+    
+    &.left .timeline-panel {
+      float: left;
+      margin-right: 30px;
+      
+      &::after {
+        border-left-width: 0;
+        border-right-width: 15px;
+        left: 100%;
+        margin-left: 0;
+      }
+    }
+    
+    &.right .timeline-panel {
+      float: right;
+      margin-left: 30px;
+      
+      &::after {
+        border-right-width: 0;
+        border-left-width: 15px;
+        right: 100%;
+        margin-right: 0;
+      }
+    }
+    
+    .timeline-badge {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      margin-left: -25px;
+      text-align: center;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      z-index: 1;
+    }
+    
+    .timeline-panel {
+      position: relative;
+      width: calc(50% - 50px);
+      padding: 20px 25px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        border-top: 15px solid transparent;
+        border-bottom: 15px solid transparent;
+        border-right-color: white;
+        border-left-color: white;
+      }
+      
+      .timeline-title {
+        margin-top: 0;
+        color: var(--primary-color);
+        font-weight: 600;
+      }
+      
+      .timeline-year {
+        display: inline-block;
+        padding: 4px 12px;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      
+      .timeline-body {
+        margin-top: 10px;
+        
+        p {
+          margin-bottom: 0;
+          color: var(--gray-dark);
+        }
+      }
+    }
+  }
+}
+
+/* Team Section */
+.team-card {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  margin-bottom: 20px;
+  
+  &:hover {
+    transform: translateY(-10px);
+    
+    .team-overlay {
+      opacity: 1;
+    }
+  }
+  
+  .team-img {
+    position: relative;
+    
+    img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+    }
+    
+    .team-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(74, 103, 65, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      
+      .team-social {
+        display: flex;
+        gap: 15px;
+        
+        .social-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          background-color: white;
+          border-radius: 50%;
+          color: var(--primary-color);
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background-color: var(--accent-color);
+            color: white;
+            transform: translateY(-5px);
+          }
+        }
+      }
+    }
+  }
+  
+  .team-info {
+    padding: 20px;
+    text-align: center;
+    
+    h5 {
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    .team-position {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+    
+    .team-bio {
+      font-size: 0.95rem;
+      color: var(--gray-dark);
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .page-banner {
+    padding: 100px 0 60px;
+    margin-bottom: 30px;
+    
+    h1 {
+      font-size: 2.5rem;
+    }
+  }
+  
+  .timeline {
+    &::before {
+      left: 30px;
+    }
+    
+    .timeline-item {
+      
+      &.left .timeline-panel,
+      &.right .timeline-panel {
+        float: right;
+        width: calc(100% - 80px);
+        margin-left: 80px;
+        margin-right: 0;
+        
+        &::after {
+          border-right-width: 0;
+          border-left-width: 15px;
+          right: 100%;
+          margin-right: 0;
+        }
+      }
+      
+      .timeline-badge {
+        left: 30px;
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .page-banner {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+  
+  .timeline {
+    .timeline-item {
+      &.left .timeline-panel,
+      &.right .timeline-panel {
+        width: calc(100% - 70px);
+        margin-left: 70px;
+      }
+    }
+  }
+}

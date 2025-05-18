@@ -1,0 +1,331 @@
+<div class="reservation-form">
+  <form [formGroup]="reservationForm">
+    <!-- Formulario simplificado para la página de inicio -->
+    <div *ngIf="simplified" class="row g-3">
+      <div class="col-md-4">
+        <div class="form-floating">
+          <input type="date" class="form-control" id="checkIn" formControlName="checkIn" [min]="minCheckInDate">
+          <label for="checkIn">Fecha de llegada</label>
+        </div>
+        <div *ngIf="fc['checkIn'].touched && fc['checkIn'].invalid" class="form-error">
+          <small class="text-danger">La fecha de llegada es obligatoria</small>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="form-floating">
+          <input type="date" class="form-control" id="checkOut" formControlName="checkOut" [min]="minCheckOutDate">
+          <label for="checkOut">Fecha de salida</label>
+        </div>
+        <div *ngIf="fc['checkOut'].touched && fc['checkOut'].invalid" class="form-error">
+          <small class="text-danger">La fecha de salida es obligatoria</small>
+        </div>
+      </div>
+      
+      <div class="col-md-2">
+        <div class="form-floating">
+          <select class="form-select" id="guests" formControlName="guests">
+            <option [value]="1">1 persona</option>
+            <option [value]="2">2 personas</option>
+            <option [value]="3">3 personas</option>
+            <option [value]="4">4 personas</option>
+            <option [value]="5">5 personas</option>
+            <option [value]="6">6 personas</option>
+            <option [value]="7">7 personas</option>
+            <option [value]="8">8 personas</option>
+          </select>
+          <label for="guests">Huéspedes</label>
+        </div>
+      </div>
+      
+      <div class="col-md-2">
+        <button type="button" class="btn btn-primary w-100 h-100" 
+                (click)="searchAvailability()" 
+                [disabled]="isLoading || reservationForm.invalid">
+          <span *ngIf="!isLoading">Buscar</span>
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Formulario completo para la página de reserva -->
+    <div *ngIf="!simplified">
+      <!-- Step 1: Fechas y huéspedes -->
+      <div *ngIf="!showResults && !isSubmitted" class="reservation-step">
+        <h4 class="mb-4">Información de la estancia</h4>
+        
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="form-floating">
+              <input type="date" class="form-control" id="checkInFull" formControlName="checkIn" [min]="minCheckInDate">
+              <label for="checkInFull">Fecha de llegada</label>
+            </div>
+            <div *ngIf="fc['checkIn'].touched && fc['checkIn'].invalid" class="form-error">
+              <small class="text-danger">La fecha de llegada es obligatoria</small>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="form-floating">
+              <input type="date" class="form-control" id="checkOutFull" formControlName="checkOut" [min]="minCheckOutDate">
+              <label for="checkOutFull">Fecha de salida</label>
+            </div>
+            <div *ngIf="fc['checkOut'].touched && fc['checkOut'].invalid" class="form-error">
+              <small class="text-danger">La fecha de salida es obligatoria</small>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="form-floating">
+              <select class="form-select" id="guestsFull" formControlName="guests">
+                <option [value]="1">1 persona</option>
+                <option [value]="2">2 personas</option>
+                <option [value]="3">3 personas</option>
+                <option [value]="4">4 personas</option>
+                <option [value]="5">5 personas</option>
+                <option [value]="6">6 personas</option>
+                <option [value]="7">7 personas</option>
+                <option [value]="8">8 personas</option>
+              </select>
+              <label for="guestsFull">Huéspedes</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-primary" 
+                  (click)="searchAvailability()" 
+                  [disabled]="isLoading">
+            <span *ngIf="!isLoading">Buscar disponibilidad</span>
+            <div>
+              {{
+                reservationForm.value | json
+              }}
+            </div>
+
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span *ngIf="isLoading">Buscando...</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Step 2: Resultados y selección de habitación -->
+      <div *ngIf="showResults && !isSubmitted" class="reservation-step">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4>Habitaciones disponibles</h4>
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToForm()">
+            <i class="fas fa-arrow-left me-2"></i> Modificar búsqueda
+          </button>
+        </div>
+        
+        <div class="alert alert-info mb-4">
+          <strong>Estancia:</strong> {{formatDate(reservationForm.value.checkIn)}} - {{formatDate(reservationForm.value.checkOut)}} 
+          ({{calculateNights()}} noches) · {{reservationForm.value.guests}} {{reservationForm.value.guests == 1 ? 'huésped' : 'huéspedes'}}
+        </div>
+        
+        <div *ngIf="availableRooms.length === 0" class="alert alert-warning">
+          No hay habitaciones disponibles para las fechas seleccionadas. Por favor, intenta con otras fechas.
+        </div>
+        
+        <div *ngFor="let room of availableRooms" class="card room-result-card mb-4" 
+             [class.selected]="reservationForm.value.roomType === room.type">
+          <div class="row g-0">
+            <div class="col-md-4">
+              <div class="room-img-container">
+                <img [src]="room.images[0]" [alt]="room.name" class="img-fluid rounded-start h-100">
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <h5 class="card-title">{{room.name}}</h5>
+                  <span class="badge bg-primary">{{room.capacity}} personas max.</span>
+                </div>
+                
+                <p class="card-text">{{room.description}}</p>
+                
+                <div class="room-features mb-3">
+                  <span><i class="fas fa-ruler-combined"></i> {{room.size}} m²</span>
+                  <span><i class="fas fa-bed"></i> {{room.beds}}</span>
+                </div>
+                
+                <div class="room-amenities mb-3">
+                  <span *ngFor="let amenity of room.amenities" class="badge bg-light text-dark me-2 mb-2">{{amenity}}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div class="price-info">
+                    <span class="room-price">{{room.pricePerNight}}€</span> / noche
+                    <div class="total-price">
+                      Total: <strong>{{calculateTotalPrice(room)}}€</strong> ({{calculateNights()}} noches)
+                    </div>
+                  </div>
+                  
+                  <button type="button" class="btn" 
+                          [class.btn-success]="reservationForm.value.roomType === room.type"
+                          [class.btn-primary]="reservationForm.value.roomType !== room.type"
+                          (click)="selectRoom(room)">
+                    <span *ngIf="reservationForm.value.roomType !== room.type">Seleccionar</span>
+                    <span *ngIf="reservationForm.value.roomType === room.type"><i class="fas fa-check me-2"></i>Seleccionada</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="availableRooms.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+          <button type="button" class="btn btn-outline-secondary" (click)="backToForm()">
+            <i class="fas fa-arrow-left me-2"></i> Atrás
+          </button>
+          
+          <button type="button" class="btn btn-primary" 
+                  [disabled]="!reservationForm.value.roomType"
+                  (click)="reservationForm.value.roomType ? (showResults = false) : null">
+            Continuar con los datos personales
+          </button>
+        </div>
+      </div>
+      
+      <!-- Step 3: Información personal -->
+      <div *ngIf="!showResults && reservationForm.value.roomType && !isSubmitted" class="reservation-step">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4>Datos de contacto</h4>
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showResults = true">
+            <i class="fas fa-arrow-left me-2"></i> Volver a la selección
+          </button>
+        </div>
+        
+        <div class="selected-room-summary alert alert-success mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>Habitación seleccionada:</strong> 
+              {{getSelectedRoomName()}}
+            </div>
+            <div>
+              <strong>Total:</strong> 
+              {{getSelectedRoomPrice()}}€
+            </div>
+          </div>
+        </div>
+        
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" class="form-control" id="name" formControlName="name">
+              <label for="name">Nombre completo</label>
+            </div>
+            <div *ngIf="fc['name'].touched && fc['name'].invalid" class="form-error">
+              <small *ngIf="fc['name'].errors?.['required']" class="text-danger">El nombre es obligatorio</small>
+              <small *ngIf="fc['name'].errors?.['minlength']" class="text-danger">El nombre debe tener al menos 3 caracteres</small>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="email" class="form-control" id="email" formControlName="email">
+              <label for="email">Correo electrónico</label>
+            </div>
+            <div *ngIf="fc['email'].touched && fc['email'].invalid" class="form-error">
+              <small *ngIf="fc['email'].errors?.['required']" class="text-danger">El correo electrónico es obligatorio</small>
+              <small *ngIf="fc['email'].errors?.['email']" class="text-danger">Introduce un correo electrónico válido</small>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="tel" class="form-control" id="phone" formControlName="phone">
+              <label for="phone">Teléfono</label>
+            </div>
+            <div *ngIf="fc['phone'].touched && fc['phone'].invalid" class="form-error">
+              <small *ngIf="fc['phone'].errors?.['required']" class="text-danger">El teléfono es obligatorio</small>
+              <small *ngIf="fc['phone'].errors?.['pattern']" class="text-danger">Introduce un número de teléfono válido</small>
+            </div>
+          </div>
+          
+          <div class="col-md-12">
+            <div class="form-floating">
+              <textarea class="form-control" id="specialRequests" formControlName="specialRequests" style="height: 100px"></textarea>
+              <label for="specialRequests">Solicitudes especiales (opcional)</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" id="termsCheck" required>
+          <label class="form-check-label" for="termsCheck">
+            He leído y acepto los <a href="#" target="_blank">términos y condiciones</a> y la <a href="#" target="_blank">política de privacidad</a>.
+          </label>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <button type="button" class="btn btn-outline-secondary" (click)="showResults = true">
+            <i class="fas fa-arrow-left me-2"></i> Atrás
+          </button>
+          
+          <button type="button" class="btn btn-success btn-lg" 
+                  (click)="submitReservation()" 
+                  [disabled]="isLoading || reservationForm.invalid">
+            <span *ngIf="!isLoading">Completar reserva</span>
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span *ngIf="isLoading">Procesando...</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Step 4: Confirmación -->
+      <div *ngIf="isSubmitted" class="reservation-step text-center">
+        <div class="reservation-confirmation">
+          <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          
+          <h3 class="text-success mb-4">¡Reserva completada con éxito!</h3>
+          
+          <p class="lead mb-4">Gracias por elegir nuestra Casa de Campo. Hemos enviado los detalles de tu reserva a tu correo electrónico.</p>
+          
+          <div class="confirmation-details mb-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <span class="detail-label">Fechas</span>
+                  <span class="detail-value">{{formatDate(reservationForm.value.checkIn)}} - {{formatDate(reservationForm.value.checkOut)}}</span>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <span class="detail-label">Habitación</span>
+                  <span class="detail-value">
+                    {{getSelectedRoomName()}}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <span class="detail-label">Huéspedes</span>
+                  <span class="detail-value">{{reservationForm.value.guests}} persona(s)</span>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <span class="detail-label">Total</span>
+                  <span class="detail-value">
+                    {{getSelectedRoomPrice()}}€
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-center gap-3">
+            <a routerLink="/" class="btn btn-outline-primary">Volver al inicio</a>
+            <button type="button" class="btn btn-primary" (click)="resetForm()">Hacer otra reserva</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

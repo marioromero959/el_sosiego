@@ -1,0 +1,298 @@
+<!-- Hero Banner -->
+<section class="page-banner">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Contacto</h1>
+        <p class="lead">Estamos aquí para atender tus consultas</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="section contact-section">
+  <div class="container">
+    <div class="row">
+      <!-- Contact Info -->
+      <div class="col-lg-4 mb-4 mb-lg-0">
+        <div class="contact-info">
+          <h3>Información de Contacto</h3>
+          <p>No dudes en contactarnos si tienes alguna pregunta sobre nuestras instalaciones, servicios o disponibilidad.</p>
+          
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="info-content">
+              <h5>Dirección</h5>
+              <p>Carretera Rural km 5,<br>Valle Verde, 28001</p>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="info-content">
+              <h5>Teléfono</h5>
+              <p><a href="tel:+34912345678">+34 912 345 678</a></p>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="info-content">
+              <h5>Email</h5>
+              <p><a href="mailto:info@casadecampo.com">info casadecampo.com</a></p>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="info-content">
+              <h5>Horario de Atención</h5>
+              <p>Lunes a Domingo<br>9:00 - 20:00</p>
+            </div>
+          </div>
+          
+          <div class="social-links mt-4">
+            <a href="https://facebook.com" target="_blank" class="social-icon" aria-label="Facebook">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://instagram.com" target="_blank" class="social-icon" aria-label="Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://twitter.com" target="_blank" class="social-icon" aria-label="Twitter">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://wa.me/34912345678" target="_blank" class="social-icon" aria-label="WhatsApp">
+              <i class="fab fa-whatsapp"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contact Form -->
+      <div class="col-lg-8">
+        <div class="contact-form-wrapper">
+          <h3>Envíanos un Mensaje</h3>
+          
+          <div *ngIf="isSubmitted" class="form-sent-message text-center">
+            <div class="success-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h4 class="mb-3">¡Mensaje enviado con éxito!</h4>
+            <p>Gracias por contactarnos. Te responderemos a la mayor brevedad posible.</p>
+            <button type="button" class="btn btn-primary mt-3" (click)="resetForm()">Enviar otro mensaje</button>
+          </div>
+          
+          <form *ngIf="!isSubmitted" [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="name" formControlName="name" placeholder="Nombre">
+                  <label for="name">Nombre completo</label>
+                </div>
+                <div *ngIf="fc['name'].touched && fc['name'].invalid" class="form-error">
+                  <small *ngIf="fc['name'].errors?.['required']" class="text-danger">El nombre es obligatorio</small>
+                  <small *ngIf="fc['name'].errors?.['minlength']" class="text-danger">El nombre debe tener al menos 3 caracteres</small>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="email" class="form-control" id="email" formControlName="email" placeholder="Email">
+                  <label for="email">Correo electrónico</label>
+                </div>
+                <div *ngIf="fc['email'].touched && fc['email'].invalid" class="form-error">
+                  <small *ngIf="fc['email'].errors?.['required']" class="text-danger">El correo electrónico es obligatorio</small>
+                  <small *ngIf="fc['email'].errors?.['email']" class="text-danger">Introduce un correo electrónico válido</small>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="tel" class="form-control" id="phone" formControlName="phone" placeholder="Teléfono">
+                  <label for="phone">Teléfono (opcional)</label>
+                </div>
+                <div *ngIf="fc['phone'].touched && fc['phone'].invalid" class="form-error">
+                  <small *ngIf="fc['phone'].errors?.['pattern']" class="text-danger">Introduce un número de teléfono válido</small>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <select class="form-select" id="subject" formControlName="subject">
+                    <option value="" selected disabled>Selecciona un asunto</option>
+                    <option value="Información general">Información general</option>
+                    <option value="Reservas">Reservas</option>
+                    <option value="Actividades">Actividades</option>
+                    <option value="Sugerencias">Sugerencias</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  <label for="subject">Asunto</label>
+                </div>
+                <div *ngIf="fc['subject'].touched && fc['subject'].invalid" class="form-error">
+                  <small *ngIf="fc['subject'].errors?.['required']" class="text-danger">El asunto es obligatorio</small>
+                </div>
+              </div>
+              
+              <div class="col-md-12">
+                <div class="form-floating">
+                  <textarea class="form-control" id="message" formControlName="message" style="height: 150px" placeholder="Mensaje"></textarea>
+                  <label for="message">Mensaje</label>
+                </div>
+                <div *ngIf="fc['message'].touched && fc['message'].invalid" class="form-error">
+                  <small *ngIf="fc['message'].errors?.['required']" class="text-danger">El mensaje es obligatorio</small>
+                  <small *ngIf="fc['message'].errors?.['minlength']" class="text-danger">El mensaje debe tener al menos 10 caracteres</small>
+                </div>
+              </div>
+              
+              <div class="col-md-12">
+                <div class="form-check mb-4">
+                  <input class="form-check-input" type="checkbox" id="privacyCheck" required>
+                  <label class="form-check-label" for="privacyCheck">
+                    He leído y acepto la <a href="#" target="_blank">política de privacidad</a>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-4" [disabled]="isLoading">
+                  <span *ngIf="!isLoading">Enviar mensaje</span>
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span *ngIf="isLoading">Enviando...</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Map Section -->
+<section class="map-section">
+  <div class="map-container">
+    <iframe 
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12345.67890!2d-3.7031662!3d40.4167754!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDI1JzA0LjQiTiAzwrA0MicxMS40Ilc!5e0!3m2!1ses!2ses!4v1621345678901!5m2!1ses!2ses" 
+      width="100%" 
+      height="450" 
+      style="border:0;" 
+      allowfullscreen="" 
+      loading="lazy"
+      title="Ubicación Casa de Campo">
+    </iframe>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="section faq-section bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Preguntas <span class="text-primary">Frecuentes</span></h2>
+          <div class="heading-divider mx-auto"></div>
+          <p class="section-subtitle">Resolvemos tus dudas más comunes</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-lg-10 mx-auto">
+        <div class="accordion" id="faqAccordion">
+          <!-- FAQ Item 1 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                ¿Cuáles son los horarios de check-in y check-out?
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                El horario de check-in es a partir de las 15:00h y el check-out hasta las 12:00h. Si necesitas horarios especiales, por favor contáctanos y haremos lo posible por adaptarnos a tus necesidades.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 2 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                ¿Se permiten mascotas en la casa?
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Aceptamos mascotas en habitaciones específicas, con un suplemento de 15€ por noche. Es necesario informar al momento de la reserva y seguir las normas de convivencia para mascotas.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 3 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                ¿Cuál es la política de cancelación?
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Cancelación gratuita hasta 7 días antes de la llegada. En caso de cancelar después, se cobrará el 50% del total de la reserva. Si no te presentas (no-show), se cobrará el 100%.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 4 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                ¿Hay restaurante en la casa rural?
+              </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Sí, contamos con un restaurante que ofrece desayuno, comida y cena. Utilizamos productos locales y de temporada. Recomendamos reservar mesa con antelación, especialmente en temporada alta.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 5 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFive">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                ¿Qué actividades puedo realizar en los alrededores?
+              </button>
+            </h2>
+            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Ofrecemos varias actividades como senderismo, paseos a caballo, avistamiento de aves, y talleres de cocina tradicional. Además, en los alrededores podrás visitar pueblos históricos, bodegas y espacios naturales protegidos.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <h2 class="text-white">¿Tienes alguna otra pregunta?</h2>
+    <p class="text-white mb-4">No dudes en contactarnos, estaremos encantados de ayudarte</p>
+    <a href="tel:+34912345678" class="btn btn-light btn-lg me-3 mb-2 mb-md-0">
+      <i class="fas fa-phone-alt me-2"></i>Llamar ahora
+    </a>
+    <a href="mailto:info@casadecampo.com" class="btn btn-outline-light btn-lg">
+      <i class="fas fa-envelope me-2"></i>Enviar email
+    </a>
+  </div>
+</section>

@@ -1,0 +1,184 @@
+<!-- Hero Banner -->
+<section class="page-banner">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Nuestros Servicios</h1>
+        <p class="lead">Descubre todo lo que tenemos para ofrecerte</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Intro Section -->
+<section class="section intro-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-10 mx-auto text-center">
+        <div class="section-heading mb-4">
+          <h2>Disfruta de Nuestras <span class="text-primary">Instalaciones</span></h2>
+          <div class="heading-divider mx-auto"></div>
+        </div>
+        <p class="section-subtitle">En nuestra Casa de Campo nos esforzamos por ofrecerte una experiencia completa. Hemos creado espacios y servicios pensados para tu confort y disfrute, para que cada momento de tu estancia sea especial.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Facilities List -->
+<section class="facilities-list">
+  <div *ngFor="let facility of facilities; let i = index" class="facility-item" [class.bg-light-custom]="i % 2 === 1" [id]="facility.id">
+    <div class="container">
+      <div class="row align-items-center" [class.flex-row-reverse]="i % 2 === 1">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+          <div class="facility-image">
+            <img [src]="facility.image" [alt]="facility.title" class="img-fluid rounded shadow">
+          </div>
+        </div>
+        
+        <div class="col-lg-6">
+          <div class="facility-content">
+            <h3>{{facility.title}}</h3>
+            <div class="heading-divider"></div>
+            <p>{{facility.description}}</p>
+            
+            <ul class="feature-list">
+              <li *ngFor="let feature of facility.features">
+                <i class="fas fa-check-circle text-primary"></i>
+                <span>{{feature}}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Additional Services -->
+<section class="section additional-services bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Servicios <span class="text-primary">Adicionales</span></h2>
+          <div class="heading-divider mx-auto"></div>
+          <p class="section-subtitle">Complementa tu estancia con nuestros servicios especiales</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div *ngFor="let service of additionalServices" class="col-md-4 col-sm-6">
+        <div class="service-card">
+          <div class="service-icon">
+            <i [class]="service.icon"></i>
+          </div>
+          <div class="service-content">
+            <h4>{{service.title}}</h4>
+            <p>{{service.description}}</p>
+            <div class="service-price">{{service.price}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="text-center mt-5">
+      <p class="note-text">* Todos los servicios adicionales están sujetos a disponibilidad. Te recomendamos reservarlos con antelación.</p>
+      <a routerLink="/contacto" class="btn btn-primary">Consultar disponibilidad</a>
+    </div>
+  </div>
+</section>
+
+<!-- Accessibility Section -->
+<section class="section accessibility-section">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <img src="assets/images/accessibility.jpg" alt="Instalaciones accesibles" class="img-fluid rounded shadow">
+      </div>
+      
+      <div class="col-lg-6">
+        <div class="section-heading mb-4">
+          <h2>Instalaciones <span class="text-primary">Accesibles</span></h2>
+          <div class="heading-divider"></div>
+        </div>
+        
+        <p>En nuestra Casa de Campo nos preocupamos por garantizar que todos nuestros huéspedes disfruten de una estancia cómoda y sin barreras. Por eso, hemos adaptado nuestras instalaciones para personas con movilidad reducida.</p>
+        
+        <div class="accessibility-features">
+          <div class="feature-row">
+            <div class="feature-item">
+              <i class="fas fa-wheelchair text-primary"></i>
+              <span>Accesos adaptados</span>
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-parking text-primary"></i>
+              <span>Parking accesible</span>
+            </div>
+          </div>
+          <div class="feature-row">
+            <div class="feature-item">
+              <i class="fas fa-bed text-primary"></i>
+              <span>Habitaciones adaptadas</span>
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-shower text-primary"></i>
+              <span>Baños accesibles</span>
+            </div>
+          </div>
+        </div>
+        
+        <p class="mt-4">Si necesitas alguna adaptación específica, no dudes en contactarnos. Haremos todo lo posible para garantizar tu comodidad durante la estancia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Reviews Section -->
+<section class="section reviews-section bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Lo que dicen nuestros <span class="text-primary">Huéspedes</span></h2>
+          <div class="heading-divider mx-auto"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-lg-10 mx-auto">
+        <div class="testimonial-slider">
+          <div class="testimonial-item">
+            <div class="testimonial-content">
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <p>"Las instalaciones son increíbles. La piscina tiene unas vistas espectaculares y el restaurante ofrece una comida deliciosa con productos frescos de su huerto. Sin duda, una experiencia completa que recomiendo a todo el mundo."</p>
+              <div class="testimonial-author">
+                <div class="author-info">
+                  <h5>Ana Martínez</h5>
+                  <span>Madrid</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <h2 class="text-white">¿Quieres disfrutar de todos nuestros servicios?</h2>
+    <p class="text-white mb-4">Reserva tu estancia y vive una experiencia inolvidable</p>
+    <a routerLink="/reservar" class="btn btn-light btn-lg">Reservar ahora</a>
+  </div>
+</section>

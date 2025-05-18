@@ -1,0 +1,260 @@
+.page-banner {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/assets/images/banner-contact.jpg') no-repeat center center;
+  background-size: cover;
+  color: white;
+  padding: 120px 0 80px;
+  margin-bottom: 50px;
+  
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .lead {
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+}
+
+/* Contact Section */
+.contact-section {
+  padding-bottom: 0;
+}
+
+/* Contact Info */
+.contact-info {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 40px 30px;
+  border-radius: 10px;
+  height: 100%;
+  
+  h3 {
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  
+  p {
+    opacity: 0.9;
+    margin-bottom: 30px;
+  }
+  
+  .info-item {
+    display: flex;
+    margin-bottom: 25px;
+    
+    .info-icon {
+      width: 50px;
+      height: 50px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .info-content {
+      h5 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+      
+      p {
+        margin-bottom: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+        
+        a {
+          color: white;
+          text-decoration: none;
+          transition: opacity 0.3s ease;
+          
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+      }
+    }
+  }
+  
+  .social-links {
+    display: flex;
+    gap: 15px;
+    
+    .social-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: white;
+        color: var(--primary-color);
+        transform: translateY(-3px);
+      }
+    }
+  }
+}
+
+/* Contact Form */
+.contact-form-wrapper {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  
+  h3 {
+    margin-bottom: 30px;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  
+  .form-error {
+    margin-bottom: 15px;
+  }
+  
+  .form-sent-message {
+    padding: 40px 20px;
+    
+    .success-icon {
+      font-size: 5rem;
+      color: #28a745;
+      margin-bottom: 20px;
+      animation: scaleIn 0.5s ease;
+    }
+    
+    h4 {
+      color: var(--primary-color);
+    }
+    
+    p {
+      color: var(--gray-dark);
+      max-width: 500px;
+      margin: 0 auto 20px;
+    }
+  }
+}
+
+/* Map Section */
+.map-section {
+  padding: 70px 0 0;
+  
+  .map-container {
+    height: 450px;
+    width: 100%;
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  }
+}
+
+/* FAQ Section */
+.faq-section {
+  padding-bottom: 70px;
+  
+  .accordion-item {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--gray-light);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .accordion-button {
+      font-weight: 600;
+      padding: 20px 25px;
+      
+      &:not(.collapsed) {
+        background-color: var(--primary-color);
+        color: white;
+        box-shadow: none;
+      }
+      
+      &:focus {
+        box-shadow: none;
+        border-color: var(--gray-light);
+      }
+      
+      &::after {
+        background-size: 1.2rem;
+      }
+    }
+    
+    .accordion-body {
+      padding: 20px 25px;
+      color: var(--gray-dark);
+    }
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .page-banner {
+    padding: 100px 0 60px;
+    margin-bottom: 30px;
+    
+    h1 {
+      font-size: 2.5rem;
+    }
+  }
+  
+  .contact-info {
+    margin-bottom: 30px;
+  }
+  
+  .map-section {
+    padding-top: 50px;
+    
+    .map-container {
+      height: 350px;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .page-banner {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+  
+  .contact-form-wrapper {
+    padding: 30px 20px;
+  }
+  
+  .map-section {
+    .map-container {
+      height: 300px;
+    }
+  }
+}

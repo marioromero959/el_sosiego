@@ -1,0 +1,236 @@
+.page-banner {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/assets/images/banner-amenities.jpg') no-repeat center center;
+  background-size: cover;
+  color: white;
+  padding: 120px 0 80px;
+  margin-bottom: 50px;
+  
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .lead {
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+}
+
+/* Facilities List */
+.facility-item {
+  padding: 70px 0;
+  
+  .facility-image {
+    img {
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+  
+  .facility-content {
+    h3 {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    
+    .heading-divider {
+      margin-bottom: 20px;
+    }
+    
+    p {
+      margin-bottom: 20px;
+      color: var(--gray-dark);
+      line-height: 1.7;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      li {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        
+        i {
+          margin-right: 10px;
+          margin-top: 5px;
+        }
+        
+        span {
+          color: var(--gray-dark);
+        }
+      }
+    }
+  }
+}
+
+/* Additional Services */
+.service-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  height: 100%;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-10px);
+  }
+  
+  .service-icon {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 2rem;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .service-content {
+    padding: 25px;
+    
+    h4 {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    
+    p {
+      color: var(--gray-dark);
+      margin-bottom: 15px;
+    }
+    
+    .service-price {
+      font-weight: 700;
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.note-text {
+  color: var(--gray-dark);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+/* Accessibility Section */
+.accessibility-features {
+  margin: 25px 0;
+  
+  .feature-row {
+    display: flex;
+    margin-bottom: 15px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .feature-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      
+      i {
+        font-size: 1.2rem;
+        margin-right: 10px;
+      }
+      
+      span {
+        color: var(--gray-dark);
+      }
+    }
+  }
+}
+
+/* Reviews Section */
+.testimonial-slider {
+  .testimonial-item {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    
+    .testimonial-content {
+      .testimonial-rating {
+        margin-bottom: 15px;
+        
+        i {
+          color: #ffc107;
+          margin-right: 3px;
+        }
+      }
+      
+      p {
+        font-style: italic;
+        color: var(--gray-dark);
+        line-height: 1.7;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+      }
+      
+      .testimonial-author {
+        display: flex;
+        align-items: center;
+        
+        .author-info {
+          h5 {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+          }
+          
+          span {
+            font-size: 0.9rem;
+            color: var(--gray-dark);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .page-banner {
+    padding: 100px 0 60px;
+    margin-bottom: 30px;
+    
+    h1 {
+      font-size: 2.5rem;
+    }
+  }
+  
+  .facility-item {
+    padding: 50px 0;
+    
+    .facility-content {
+      margin-top: 20px;
+    }
+  }
+  
+  .accessibility-features {
+    .feature-row {
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .page-banner {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+  
+  .service-card {
+    margin-bottom: 20px;
+  }
+}

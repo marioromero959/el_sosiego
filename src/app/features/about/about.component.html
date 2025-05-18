@@ -1,0 +1,158 @@
+<!-- Hero Banner -->
+<section class="page-banner">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Sobre Nosotros</h1>
+        <p class="lead">Conoce nuestra historia, equipo y valores</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Our Story Section -->
+<section class="section story-section">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <img src="assets/images/about-main.jpg" alt="Historia de nuestra Casa de Campo" class="img-fluid rounded shadow story-img">
+      </div>
+      <div class="col-lg-6">
+        <div class="section-heading mb-4">
+          <h2>Nuestra <span class="text-primary">Historia</span></h2>
+          <div class="heading-divider"></div>
+        </div>
+        <p>Fundada en 1998 por la familia Rodríguez, nuestra Casa de Campo nació del sueño de crear un espacio donde los visitantes pudieran conectar con la naturaleza sin renunciar a las comodidades.</p>
+        <p>Comenzamos con una antigua casona rural que renovamos respetando su estructura original pero añadiendo todas las comodidades modernas. A lo largo de los años, hemos crecido y evolucionado, siempre manteniendo nuestra esencia: hospitalidad auténtica y respeto por el entorno natural.</p>
+        <p>Hoy, más de 25 años después, seguimos gestionando este proyecto con la misma pasión e ilusión del primer día, y nos enorgullece ver cómo generaciones de familias regresan año tras año para disfrutar de la experiencia que ofrecemos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values Section -->
+<section class="section values-section bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Nuestros <span class="text-primary">Valores</span></h2>
+          <div class="heading-divider mx-auto"></div>
+          <p class="section-subtitle">Principios que guían nuestro trabajo diario</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="value-card text-center">
+          <div class="value-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h4>Hospitalidad</h4>
+          <p>Recibimos a cada huésped como si fuera parte de nuestra familia, con calidez y atención personalizada.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="value-card text-center">
+          <div class="value-icon">
+            <i class="fas fa-leaf"></i>
+          </div>
+          <h4>Sostenibilidad</h4>
+          <p>Nos comprometemos con prácticas respetuosas con el medio ambiente y la promoción de la cultura local.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="value-card text-center">
+          <div class="value-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <h4>Excelencia</h4>
+          <p>Buscamos la mejora continua en todos nuestros servicios para superar las expectativas de nuestros huéspedes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline Section -->
+<section class="section timeline-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Nuestra <span class="text-primary">Trayectoria</span></h2>
+          <div class="heading-divider mx-auto"></div>
+          <p class="section-subtitle">Los momentos que han marcado nuestra historia</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="timeline">
+      <ng-container *ngFor="let item of timeline; let i = index">
+        <div class="timeline-item" [class.left]="i % 2 === 0" [class.right]="i % 2 !== 0">
+          <div class="timeline-badge">
+            <i class="fas {{item.icon}}"></i>
+          </div>
+          <div class="timeline-panel">
+            <div class="timeline-heading">
+              <h4 class="timeline-title">{{item.title}}</h4>
+              <p><span class="timeline-year">{{item.year}}</span></p>
+            </div>
+            <div class="timeline-body">
+              <p>{{item.description}}</p>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>
+
+<!-- Team Section -->
+<section class="section team-section bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Nuestro <span class="text-primary">Equipo</span></h2>
+          <div class="heading-divider mx-auto"></div>
+          <p class="section-subtitle">Las personas que hacen posible tu experiencia</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div *ngFor="let member of team" class="col-lg-3 col-md-6">
+        <div class="team-card">
+          <div class="team-img">
+            <img [src]="member.photo" [alt]="member.name" class="img-fluid">
+            <div class="team-overlay">
+              <div class="team-social">
+                <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+              </div>
+            </div>
+          </div>
+          <div class="team-info">
+            <h5>{{member.name}}</h5>
+            <span class="team-position">{{member.position}}</span>
+            <p class="team-bio">{{member.bio}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <h2 class="text-white">¿Quieres conocernos en persona?</h2>
+    <p class="text-white mb-4">Reserva tu estancia y sé parte de nuestra historia</p>
+    <a routerLink="/reservar" class="btn btn-light btn-lg">Reservar ahora</a>
+  </div>
+</section>

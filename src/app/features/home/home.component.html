@@ -1,0 +1,203 @@
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center min-vh-100">
+      <div class="col-lg-6 hero-content fade-in">
+        <h1>Disfruta de la naturaleza en nuestra <span class="text-primary">Casa de Campo</span></h1>
+        <p class="lead">Un lugar perfecto para desconectar, relajarse y disfrutar de momentos únicos rodeado de naturaleza y confort.</p>
+        <div class="hero-cta">
+          <a routerLink="/reservar" class="btn btn-primary btn-lg me-3">Reservar ahora</a>
+          <a routerLink="/galeria" class="btn btn-outline-primary btn-lg">Ver galería</a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <div class="booking-widget fade-in">
+          <h3>¿Cuándo quieres visitarnos?</h3>
+          <app-reservation-form [simplified]="true"></app-reservation-form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="section about-section bg-light-custom">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="about-image">
+          <img src="assets/images/gallery/img54.jpeg" alt="Casa de Campo Interior" class="img-fluid rounded shadow">
+          <img src="assets/images/gallery/img31.jpeg" alt="Jardín" class="img-fluid rounded shadow img-offset">
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="section-heading mb-4">
+          <h2>Bienvenido a nuestra <span class="text-primary">Casa de Campo</span></h2>
+          <div class="heading-divider"></div>
+        </div>
+        <p>Situada en un entorno privilegiado, nuestra casa rural ofrece el equilibrio perfecto entre la tranquilidad del campo y el confort moderno que mereces.</p>
+        <p>Con más de 15 años de experiencia, nos esforzamos por brindar a nuestros huéspedes una experiencia auténtica y memorable, con atención personalizada y servicios de calidad.</p>
+        <div class="features mt-4">
+          <div class="feature">
+            <i class="fas fa-check-circle text-primary"></i>
+            <span>Habitaciones con vistas panorámicas</span>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle text-primary"></i>
+            <span>Comidas preparadas con productos locales</span>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle text-primary"></i>
+            <span>Actividades al aire libre para todas las edades</span>
+          </div>
+        </div>
+        <a routerLink="/sobre-nosotros" class="btn btn-primary mt-4">Conoce más sobre nosotros</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Accommodations Section -->
+<section class="section accommodations-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2>Nuestros <span class="text-primary">Alojamientos</span></h2>
+      <div class="heading-divider mx-auto"></div>
+      <p class="section-subtitle">Descubre nuestras cómodas y acogedoras opciones de hospedaje</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 room-card">
+          <img src="assets/images/gallery/img89.jpeg" class="card-img-top" alt="Habitación Estándar">
+          <div class="card-body">
+            <h5 class="card-title">Habitación Estándar</h5>
+            <div class="room-features">
+              <span><i class="fas fa-user"></i> 2 Personas</span>
+              <span><i class="fas fa-bed"></i> 1 Cama</span>
+              <span><i class="fas fa-mountain"></i> Vista al Jardín</span>
+            </div>
+            <p class="card-text">Acogedora habitación con todas las comodidades para una estancia agradable.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="room-price">Desde 80€/noche</span>
+              <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 room-card">
+          <img src="assets/images/gallery/img13.jpeg" class="card-img-top" alt="Habitación Superior">
+          <div class="card-body">
+            <h5 class="card-title">Habitación Superior</h5>
+            <div class="room-features">
+              <span><i class="fas fa-user"></i> 2 Personas</span>
+              <span><i class="fas fa-bed"></i> 1 Cama King</span>
+              <span><i class="fas fa-mountain"></i> Vista a la Montaña</span>
+            </div>
+            <p class="card-text">Espaciosa habitación con vistas impresionantes y detalles de lujo.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="room-price">Desde 120€/noche</span>
+              <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card h-100 room-card">
+          <img src="assets/images/gallery/img98.jpeg" class="card-img-top" alt="Suite Familiar">
+          <div class="card-body">
+            <h5 class="card-title">Suite Familiar</h5>
+            <div class="room-features">
+              <span><i class="fas fa-user"></i> 4 Personas</span>
+              <span><i class="fas fa-bed"></i> 2 Camas</span>
+              <span><i class="fas fa-mountain"></i> Vista Panorámica</span>
+            </div>
+            <p class="card-text">Perfecta para familias, con amplios espacios y todas las comodidades.</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="room-price">Desde 180€/noche</span>
+              <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="text-center mt-5">
+      <a routerLink="/alojamientos" class="btn btn-primary btn-lg">Ver todas las opciones</a>
+    </div>
+  </div>
+</section>
+
+<!-- Amenities Section -->
+<section class="section amenities-section bg-light-custom">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2>Nuestros <span class="text-primary">Servicios</span></h2>
+      <div class="heading-divider mx-auto"></div>
+      <p class="section-subtitle">Disfruta de todas nuestras instalaciones y servicios</p>
+    </div>
+    
+    <div class="row g-4">
+      <ng-container *ngFor="let amenity of amenities">
+        <div class="col-md-3 col-sm-6">
+          <div class="amenity-card text-center">
+            <div class="amenity-icon">
+              <img src="assets/icons/{{amenity.icon}}" alt="{{amenity.title}}">
+            </div>
+            <h5>{{amenity.title}}</h5>
+            <p>{{amenity.description}}</p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    
+    <div class="text-center mt-5">
+      <a routerLink="/servicios" class="btn btn-primary">Descubrir más servicios</a>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="section testimonials-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2>Lo que dicen <span class="text-primary">Nuestros Huéspedes</span></h2>
+      <div class="heading-divider mx-auto"></div>
+      <p class="section-subtitle">Experiencias compartidas por quienes han disfrutado de nuestra casa</p>
+    </div>
+    
+    <div class="row g-4">
+      <ng-container *ngFor="let testimonial of testimonials">
+        <div class="col-md-4">
+          <div class="testimonial-card">
+            <div class="testimonial-rating">
+              <ng-container *ngFor="let i of [1,2,3,4,5]">
+                <i class="fas fa-star" [class.text-warning]="i <= testimonial.rating" [class.text-muted]="i > testimonial.rating"></i>
+              </ng-container>
+            </div>
+            <p class="testimonial-text">"{{testimonial.text}}"</p>
+            <div class="testimonial-author">
+              <img [src]="testimonial.photo" alt="{{testimonial.name}}" class="testimonial-avatar">
+              <div class="testimonial-info">
+                <h6>{{testimonial.name}}</h6>
+                <span>Huésped verificado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <h2 class="text-white">¿Listo para una experiencia inolvidable?</h2>
+    <p class="text-white mb-4">Reserva ahora y disfruta de momentos especiales en nuestra casa de campo</p>
+    <a routerLink="/reservar" class="btn btn-light btn-lg">Reservar ahora</a>
+  </div>
+</section>

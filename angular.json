@@ -29,12 +29,19 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/assets" 
             ],
             "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "bootstrap"
+            ]
           },
           "configurations": {
             "production": {
@@ -88,7 +95,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/assets"
             ],
             "styles": [
               "src/styles.scss"

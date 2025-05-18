@@ -1,0 +1,87 @@
+<!-- Hero Banner -->
+<section class="page-banner">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Nuestra Galería</h1>
+        <p class="lead">Descubre nuestra casa de campo en imágenes</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Gallery Section -->
+<section class="section gallery-section" tabindex="0" (keydown)="handleKeydown($event)">
+  <div class="container">
+    <!-- Filter Buttons -->
+    <div class="gallery-filters text-center mb-5">
+      <div class="btn-group">
+        <button type="button" class="btn" 
+                *ngFor="let category of categories"
+                [class.btn-primary]="selectedCategory === category.id"
+                [class.btn-outline-primary]="selectedCategory !== category.id"
+                (click)="filterImages(category.id)">
+          {{category.name}}
+        </button>
+      </div>
+    </div>
+    
+    <!-- Gallery Grid -->
+    <div class="row g-4 gallery-container">
+      <div *ngFor="let image of filteredImages" class="col-lg-4 col-md-6 gallery-item" [attr.data-category]="image.category">
+        <div class="gallery-card" (click)="openLightbox(image)">
+          <img [src]="image.thumb" [alt]="image.alt" class="img-fluid">
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <h5>{{image.alt}}</h5>
+              <div class="gallery-icon">
+                <i class="fas fa-search-plus"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div *ngIf="filteredImages.length === 0" class="text-center py-5">
+      <div class="empty-state">
+        <i class="fas fa-image"></i>
+        <h4>No hay imágenes en esta categoría</h4>
+        <p>Por favor, selecciona otra categoría para ver las imágenes.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Lightbox -->
+  <div class="lightbox" [class.active]="lightboxActive">
+    <div class="lightbox-content">
+      <button type="button" class="btn-close lightbox-close" aria-label="Cerrar" (click)="closeLightbox()"></button>
+      
+      <div class="lightbox-img-container">
+        <img *ngIf="currentImage" [src]="currentImage.src" [alt]="currentImage.alt" class="lightbox-img">
+      </div>
+      
+      <div class="lightbox-caption">
+        <h5 *ngIf="currentImage">{{currentImage.alt}}</h5>
+      </div>
+      
+      <button type="button" class="lightbox-nav lightbox-prev" (click)="navigateLightbox(-1)">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <button type="button" class="lightbox-nav lightbox-next" (click)="navigateLightbox(1)">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <h2 class="text-white">¿Te gustaría experimentarlo en persona?</h2>
+    <p class="text-white mb-4">Reserva tu estancia ahora y vive la experiencia completa</p>
+    <a routerLink="/reservar" class="btn btn-light btn-lg">Reservar ahora</a>
+  </div>
+</section>

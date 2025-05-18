@@ -1,0 +1,300 @@
+/* Hero Section */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("/assets/images/gallery/img53.jpeg") no-repeat center center;
+  background-size: cover;
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: white;
+  padding: 120px 0 80px;
+  
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    
+    span {
+      color: var(--accent-color);
+    }
+  }
+  
+  .lead {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    max-width: 90%;
+  }
+  
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  
+  .booking-widget {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    color: var(--dark-color);
+    
+    h3 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+  }
+}
+
+/* About Section */
+.about-section {
+  .about-image {
+    position: relative;
+    
+    img {
+      border-radius: 10px;
+      
+      &.img-offset {
+        position: absolute;
+        bottom: -50px;
+        right: -50px;
+        width: 60%;
+        z-index: 1;
+      }
+    }
+  }
+  
+  .feature {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    
+    i {
+      font-size: 18px;
+      margin-right: 10px;
+    }
+  }
+}
+
+/* Section Heading */
+.section-heading {
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.heading-divider {
+  height: 3px;
+  width: 60px;
+  background-color: var(--primary-color);
+  margin-bottom: 20px;
+  
+  &.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--gray-dark);
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+/* Accommodations Section */
+.room-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-10px);
+  }
+  
+  .card-title {
+    font-family: var(--font-primary);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+  
+  .room-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    
+    span {
+      color: var(--gray-dark);
+      
+      i {
+        color: var(--primary-color);
+        margin-right: 5px;
+      }
+    }
+  }
+  
+  .room-price {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+  }
+}
+
+/* Amenities Section */
+.amenity-card {
+  background-color: white;
+  padding: 30px 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-10px);
+  }
+  
+  .amenity-icon {
+    height: 70px;
+    width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background-color: rgba(74, 103, 65, 0.1);
+    border-radius: 50%;
+    
+    img {
+      height: 35px;
+    }
+  }
+  
+  h5 {
+    margin-bottom: 10px;
+    font-family: var(--font-primary);
+    color: var(--primary-color);
+  }
+  
+  p {
+    color: var(--gray-dark);
+    font-size: 0.95rem;
+  }
+}
+
+/* Testimonials Section */
+.testimonial-card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  
+  .testimonial-rating {
+    margin-bottom: 15px;
+    
+    i {
+      color: #ffc107;
+      margin-right: 3px;
+      
+      &.text-muted {
+        color: #e0e0e0;
+      }
+    }
+  }
+  
+  .testimonial-text {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--gray-dark);
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+  
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    
+    .testimonial-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 15px;
+      border: 3px solid var(--primary-color);
+    }
+    
+    .testimonial-info {
+      h6 {
+        margin-bottom: 5px;
+        font-family: var(--font-primary);
+      }
+      
+      span {
+        font-size: 0.85rem;
+        color: var(--gray-dark);
+      }
+    }
+  }
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(rgba(74, 103, 65, 0.9), rgba(74, 103, 65, 0.9)), url("/assets/images/cta-bg.jpg") no-repeat center center;
+  background-size: cover;
+  padding: 80px 0;
+  margin-top: 80px;
+  
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto 2rem;
+    opacity: 0.9;
+  }
+  
+  .btn-light {
+    &:hover {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: white;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .hero {
+    h1 {
+      font-size: 2.5rem;
+    }
+    
+    .booking-widget {
+      margin-top: 50px;
+    }
+  }
+  
+  .about-section .about-image img.img-offset {
+    position: relative;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+  
+  .section-heading h2 {
+    font-size: 2rem;
+  }
+}

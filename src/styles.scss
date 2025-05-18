@@ -1,1 +1,129 @@
 /* You can add global styles to this file, and also import other style files */
+/* Variables globales */
+:root {
+  --primary-color: #4a6741;
+  --secondary-color: #a57c50;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --accent-color: #d4a373;
+  --gray-light: #e9ecef;
+  --gray-medium: #ced4da;
+  --gray-dark: #6c757d;
+  --font-primary: 'Playfair Display', serif;
+  --font-secondary: 'Raleway', sans-serif;
+}
+
+/* Estilos básicos */
+body {
+  font-family: var(--font-secondary);
+  color: var(--dark-color);
+  line-height: 1.6;
+  background-color: var(--light-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.section {
+  padding: 5rem 0;
+
+  &-small {
+    padding: 3rem 0;
+  }
+}
+
+/* Botones personalizados */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  
+  &:hover {
+    background-color: darken(#4a6741, 10%);
+    border-color: darken(#4a6741, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  
+  &:hover {
+    background-color: darken(#a57c50, 10%);
+    border-color: darken(#a57c50, 10%);
+  }
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  
+  &:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+}
+
+/* Utilidades */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.text-secondary {
+  color: var(--secondary-color) !important;
+}
+
+.bg-light-custom {
+  background-color: #f7f7f7;
+}
+
+.bg-primary-custom {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.bg-secondary-custom {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+/* Tarjetas */
+.card {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Animaciones */
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .section {
+    padding: 3rem 0;
+    
+    &-small {
+      padding: 2rem 0;
+    }
+  }
+}

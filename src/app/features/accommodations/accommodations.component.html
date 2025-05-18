@@ -1,0 +1,258 @@
+<!-- Hero Banner -->
+<section class="page-banner">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Nuestros Alojamientos</h1>
+        <p class="lead">Descubre nuestras cómodas y acogedoras habitaciones</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Accommodations Intro -->
+<section class="section accommodations-intro">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-10 mx-auto text-center">
+        <div class="section-heading mb-4">
+          <h2>Confort y <span class="text-primary">Tranquilidad</span></h2>
+          <div class="heading-divider mx-auto"></div>
+        </div>
+        <p class="section-subtitle">En nuestra Casa de Campo, ofrecemos habitaciones con el equilibrio perfecto entre estilo rústico y confort moderno. Cada espacio ha sido diseñado para brindarte una experiencia relajante y única, rodeado de la belleza natural del entorno.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Common Features -->
+<section class="section common-features bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <h3>Todas nuestras habitaciones incluyen</h3>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div *ngFor="let feature of commonFeatures" class="col-md-4 col-sm-6">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i [class]="feature.icon"></i>
+          </div>
+          <div class="feature-content">
+            <h5>{{feature.title}}</h5>
+            <p>{{feature.description}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Room List -->
+<section class="section room-list">
+  <div class="container">
+    <!-- Loading Indicator -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3">Cargando opciones de alojamiento...</p>
+    </div>
+    
+    <!-- Rooms -->
+    <div *ngIf="!isLoading">
+      <div *ngFor="let room of rooms; let i = index" class="room-item" [class.bg-light-custom]="i % 2 === 1">
+        <div class="container">
+          <div class="row align-items-center" [class.flex-row-reverse]="i % 2 === 1">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+              <div class="room-image-container">
+                <div class="room-image-slider">
+                  <img [src]="room.images[0]" [alt]="room.name" class="img-fluid rounded shadow">
+                </div>
+                <div class="room-badge" *ngIf="room.type === 'family'">
+                  <span>Ideal para familias</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-lg-6">
+              <div class="room-content">
+                <h3>{{room.name}}</h3>
+                <div class="room-features mb-3">
+                  <span><i class="fas fa-ruler-combined"></i> {{room.size}} m²</span>
+                  <span><i class="fas fa-user"></i> {{room.capacity}} Personas</span>
+                  <span><i class="fas fa-bed"></i> {{room.beds}}</span>
+                </div>
+                
+                <p>{{room.description}}</p>
+                
+                <h5>Servicios:</h5>
+                <div class="room-amenities mb-4">
+                  <span *ngFor="let amenity of room.amenities" class="amenity-badge">
+                    {{amenity}}
+                  </span>
+                </div>
+                
+                <div class="room-price-container">
+                  <div class="room-price">
+                    <span class="price">{{room.pricePerNight}}€</span> / noche
+                    <small>*Precios por habitación, desayuno incluido, IVA incluido</small>
+                  </div>
+                  
+                  <a routerLink="/reservar" [queryParams]="{roomType: room.type}" class="btn btn-primary">Reservar ahora</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Policies Section -->
+<section class="section policies-section bg-light-custom">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Políticas de <span class="text-primary">Reserva</span></h2>
+          <div class="heading-divider mx-auto"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h4>Horarios</h4>
+          <ul>
+            <li><strong>Check-in:</strong> 15:00 - 20:00h</li>
+            <li><strong>Check-out:</strong> Hasta las 12:00h</li>
+            <li>Posibilidad de early check-in y late check-out (sujeto a disponibilidad)</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-ban"></i>
+          </div>
+          <h4>Cancelación</h4>
+          <ul>
+            <li>Cancelación gratuita hasta 7 días antes</li>
+            <li>Entre 7 y 3 días: 50% del total</li>
+            <li>Menos de 3 días o no-show: 100% del total</li>
+            <li>Seguro de cancelación disponible</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <h4>Información Adicional</h4>
+          <ul>
+            <li>Se requiere un depósito del 20% para confirmar la reserva</li>
+            <li>Habitaciones para no fumadores</li>
+            <li>Mascotas permitidas en habitaciones específicas (suplemento)</li>
+            <li>Cuna disponible sin cargo (bajo petición)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="section faq-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center mb-5">
+        <div class="section-heading">
+          <h2>Preguntas <span class="text-primary">Frecuentes</span></h2>
+          <div class="heading-divider mx-auto"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-lg-10 mx-auto">
+        <div class="accordion" id="accommodationFaq">
+          <!-- FAQ Item 1 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                ¿Las habitaciones tienen aire acondicionado?
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accommodationFaq">
+              <div class="accordion-body">
+                Sí, todas nuestras habitaciones disponen de sistema de climatización individual que permite regular tanto la calefacción como el aire acondicionado según tus preferencias.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 2 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                ¿Hay opciones para familias con niños?
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accommodationFaq">
+              <div class="accordion-body">
+                ¡Por supuesto! Nuestra Suite Familiar es ideal para familias con niños. Además, disponemos de cunas gratuitas (bajo petición) y camas supletorias para niños (con un pequeño suplemento). También contamos con menú infantil en el restaurante y actividades adaptadas para los más pequeños.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 3 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                ¿Hay conexión a Internet en las habitaciones?
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accommodationFaq">
+              <div class="accordion-body">
+                Sí, disponemos de Wi-Fi gratuito de alta velocidad en todas las habitaciones y zonas comunes de la casa. La contraseña se proporciona durante el check-in.
+              </div>
+            </div>
+          </div>
+          
+          <!-- FAQ Item 4 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                ¿Puedo solicitar habitaciones comunicadas?
+              </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accommodationFaq">
+              <div class="accordion-body">
+                Disponemos de varias habitaciones comunicadas que son ideales para familias numerosas o grupos. Te recomendamos solicitarlas con antelación ya que están sujetas a disponibilidad.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <h2 class="text-white">¿Listo para reservar tu estancia?</h2>
+    <p class="text-white mb-4">Disfruta de la tranquilidad y el confort de nuestra casa de campo</p>
+    <a routerLink="/reservar" class="btn btn-light btn-lg">Reservar ahora</a>
+  </div>
+</section>
