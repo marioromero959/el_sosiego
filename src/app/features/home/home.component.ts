@@ -13,44 +13,44 @@ import { ReservationFormComponent } from '../../shared/components/reservation-fo
 export class HomeComponent {
   amenities = [
     {
-      icon: 'wifi.svg',
+      icon: 'fa-solid fa-wifi',
       title: 'Wi-Fi Gratis',
-      description: 'Conexión rápida y estable en toda la propiedad.'
+      description: 'Conexión satelital Starlink de alta velocidad en toda la propiedad.'
     },
     {
-      icon: 'pool.svg',
+      icon: 'fa-solid fa-water-ladder',
       title: 'Piscina',
       description: 'Disfruta de nuestra piscina con vistas espectaculares.'
     },
     {
-      icon: 'breakfast.svg',
+      icon: 'fa-solid fa-mug-saucer',
       title: 'Desayuno',
       description: 'Desayuno completo con productos locales y caseros.'
     },
     {
-      icon: 'parking.svg',
-      title: 'Estacionamiento',
-      description: 'Amplio estacionamiento gratuito para todos los huéspedes.'
+      icon: 'fa-solid fa-fire',
+      title: 'Asador',
+      description: 'Parrilla disponible para compartir un buen asado de campo.'
     }
   ];
 
   testimonials = [
     {
-      name: 'Elena García',
-      photo: 'assets/images/testimonial1.jpg',
-      text: 'Nuestra estancia fue maravillosa. Las instalaciones están impecables y el entorno natural es increíble. Volveremos seguro.',
+      name: 'Jeremias Bizin',
+      photo: 'fa-solid fa-j',
+      text: 'Hermoso lugar y excelente servicio. Muy atentos los dueños. Muy recomendable.',
       rating: 5
     },
     {
-      name: 'Miguel Rodríguez',
-      photo: 'assets/images/testimonial2.jpg',
-      text: 'Un lugar perfecto para desconectar. Habitaciones cómodas, personal atento y la comida deliciosa. Lo recomendaré a todos mis amigos.',
+      name: 'Maria Szlafsztein',
+      photo: 'fa-solid fa-m',
+      text: 'Un lugar maravilloso, fuimos en familia y todos disfrutamos de los encantadores espacios de la  casa y el parque. Super limpia la casa, mucha sombra y una hermosa pileta. Los dueños super atentos a todos los detalles.',
       rating: 5
     },
     {
-      name: 'Laura Martínez',
-      photo: 'assets/images/testimonial3.jpg',
-      text: 'Hemos pasado un fin de semana fantástico, el lugar es precioso y tranquilo. Ideal para escapar del estrés de la ciudad.',
+      name: 'Bianca Bagnati',
+      photo: 'fa-solid fa-b',
+      text: 'Lugar de ensueño y los dueños siempre pendiente de nuestro bienestar super recomendable! Volveremos.',
       rating: 4
     }
   ];

@@ -2,6 +2,7 @@
 /* Variables globales */
 :root {
   --primary-color: #4a6741;
+  --primary-color-ligth: #6d9860;
   --secondary-color: #a57c50;
   --light-color: #f8f9fa;
   --dark-color: #212529;
@@ -65,10 +66,23 @@ h1, h2, h3, h4, h5, h6 {
     color: white;
   }
 }
+.btn-outline-primary-ligth {
+  color: var(--primary-color-ligth);
+  border-color: var(--primary-color-ligth);
+  
+  &:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+}
 
 /* Utilidades */
 .text-primary {
   color: var(--primary-color) !important;
+}
+
+.text-primary-ligth {
+  color: var(--primary-color-ligth) !important;
 }
 
 .text-secondary {
