@@ -39,40 +39,40 @@ export class AboutComponent {
 
   timeline = [
     {
-      year: '1998',
+      year: 'ene-2024',
       title: 'Inicio del sueño',
       description: 'Compra de la finca original y comienzo de la renovación de la casa principal.',
       icon: 'fa-house'
     },
     {
-      year: '2003',
+      year: 'ago-2024',
       title: 'Apertura oficial',
-      description: 'Inauguración oficial de la Casa de Campo con las primeras 5 habitaciones.',
+      description: 'Inauguración oficial del Sosiego con las 4 habitaciones.',
       icon: 'fa-door-open'
     },
     {
-      year: '2010',
-      title: 'Primera expansión',
-      description: 'Ampliación con 5 habitaciones más y construcción de la piscina exterior.',
-      icon: 'fa-water'
+      year: 'ene-2025',
+      title: 'Modernizacion',
+      description: 'Decidimos actualizar el internet a un servicio satelital utilizando starlink.',
+      icon: 'fa-wifi'
+    },
+    // {
+    //   year: '2015',
+    //   title: 'Renovación de instalaciones',
+    //   description: 'Mejora de todas las habitaciones y creación del restaurante con terraza panorámica.',
+    //   icon: 'fa-utensils'
+    // },
+    {
+      year: 'feb-2025',
+      title: 'Área de Piscina',
+      description: 'Recibimos el verano 2025 con la piscina para disfrutar del calor.',
+      icon: 'fa-water-ladder'
     },
     {
-      year: '2015',
-      title: 'Renovación de instalaciones',
-      description: 'Mejora de todas las habitaciones y creación del restaurante con terraza panorámica.',
-      icon: 'fa-utensils'
-    },
-    {
-      year: '2021',
-      title: 'Área de actividades',
-      description: 'Creación de nuevas áreas de recreo y espacios para actividades al aire libre.',
-      icon: 'fa-person-hiking'
-    },
-    {
-      year: '2024',
-      title: 'Sostenibilidad',
-      description: 'Implementación de medidas de sostenibilidad y energías renovables en toda la propiedad.',
-      icon: 'fa-leaf'
+      year: 'jun-2025',
+      title: 'Casamiento',
+      description: 'Festejamos nuestro primer evento. El casamiento de Joaquin y Delfi!',
+      icon: 'fa-heart'
     }
   ];
 }
