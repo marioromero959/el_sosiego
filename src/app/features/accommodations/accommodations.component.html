@@ -63,16 +63,75 @@
     
     <!-- Rooms -->
     <div *ngIf="!isLoading">
-      <div *ngFor="let room of rooms; let i = index" class="room-item" [class.bg-light-custom]="i % 2 === 1">
+      <div *ngFor="let room of rooms; let roomIndex = index" class="room-item" [class.bg-light-custom]="roomIndex % 2 === 1">
         <div class="container">
-          <div class="row align-items-center" [class.flex-row-reverse]="i % 2 === 1">
+          <div class="row align-items-center" [class.flex-row-reverse]="roomIndex % 2 === 1">
             <div class="col-lg-6 mb-4 mb-lg-0">
               <div class="room-image-container">
-                <div class="room-image-slider">
-                  <img [src]="room.images[0]" [alt]="room.name" class="img-fluid rounded shadow">
+                <!-- Slider de imágenes -->
+                <div class="room-image-slider"
+                     (mouseenter)="onSliderMouseEnter(roomIndex)"
+                     (mouseleave)="onSliderMouseLeave(roomIndex, room.images?.length || 0)"
+                     (keydown)="onKeyDown($event, roomIndex, room.images?.length || 0)"
+                     tabindex="0"
+                     role="region"
+                     [attr.aria-label]="'Galería de imágenes de ' + room.name">
+                  
+                  <!-- Contenedor de imágenes -->
+                  <div class="slider-images">
+                    <div *ngFor="let image of room.images; let imgIndex = index" 
+                         class="slider-image"
+                         [class.active]="imgIndex === getCurrentImageIndex(roomIndex)"
+                         [attr.aria-hidden]="imgIndex !== getCurrentImageIndex(roomIndex)">
+                      <img [src]="image" 
+                           [alt]="room.name + ' - Imagen ' + (imgIndex + 1)"
+                           class="img-fluid rounded shadow"
+                           loading="lazy">
+                    </div>
+                  </div>
+                  
+                  <!-- Controles de navegación -->
+                  <div *ngIf="room.images && room.images.length > 1" class="slider-controls">
+                    <!-- Botón anterior -->
+                    <button class="slider-btn slider-btn-prev"
+                            (click)="prevImage(roomIndex, room.images.length)"
+                            type="button"
+                            aria-label="Imagen anterior"
+                            title="Imagen anterior">
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <!-- Botón siguiente -->
+                    <button class="slider-btn slider-btn-next"
+                            (click)="nextImage(roomIndex, room.images.length)"
+                            type="button"
+                            aria-label="Siguiente imagen"
+                            title="Siguiente imagen">
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Indicadores de puntos -->
+                  <div *ngIf="room.images && room.images.length > 1" class="slider-dots">
+                    <button *ngFor="let image of room.images; let dotIndex = index"
+                            class="slider-dot"
+                            [class.active]="dotIndex === getCurrentImageIndex(roomIndex)"
+                            (click)="goToImage(roomIndex, dotIndex)"
+                            type="button"
+                            [attr.aria-label]="'Ir a imagen ' + (dotIndex + 1)"
+                            [attr.title]="'Imagen ' + (dotIndex + 1)">
+                    </button>
+                  </div>
+                  
+                  <!-- Contador de imágenes -->
+                  <div *ngIf="room.images && room.images.length > 1" class="image-counter">
+                    {{getCurrentImageIndex(roomIndex) + 1}} / {{room.images.length}}
+                  </div>
                 </div>
+                
+                <!-- Badge de la habitación -->
                 <div class="room-badge" *ngIf="room.type === 'family'">
-                  <span>Ideal para familias</span>
+                  <span>Ideal para parejas</span>
                 </div>
               </div>
             </div>
@@ -88,21 +147,21 @@
                 
                 <p>{{room.description}}</p>
                 
-                <h5>Servicios:</h5>
+                <h5>Servicios</h5>
                 <div class="room-amenities mb-4">
                   <span *ngFor="let amenity of room.amenities" class="amenity-badge">
                     {{amenity}}
                   </span>
                 </div>
                 
-                <div class="room-price-container">
+                <!-- Precio y botón de reserva (descomentado) -->
+                <!-- <div class="room-price-container">
                   <div class="room-price">
                     <span class="price">{{room.pricePerNight}}€</span> / noche
                     <small>*Precios por habitación, desayuno incluido, IVA incluido</small>
                   </div>
-                  
                   <a routerLink="/reservar" [queryParams]="{roomType: room.type}" class="btn btn-primary">Reservar ahora</a>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
