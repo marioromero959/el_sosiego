@@ -13,120 +13,132 @@ export class AmenitiesComponent {
   facilities = [
     {
       id: 'dining',
-      title: 'Restaurante y Bar',
-      description: 'Nuestro restaurante ofrece una experiencia gastronómica única con productos locales y de temporada. El menú cambia regularmente para aprovechar los ingredientes más frescos, muchos de ellos procedentes de nuestra propia huerta ecológica.',
+      title: 'Cocina comedor con barra',
+      description: 'Nuestra amplia cocina con barra incluida ofrece todos los utensilios necesarios para preparar cualquier comida en casa.',
       features: [
-        'Desayuno buffet de 8:00 a 10:30',
-        'Almuerzo de 13:30 a 16:00',
-        'Cena de 20:00 a 22:30',
-        'Menú degustación con maridaje de vinos locales',
-        'Opciones vegetarianas, veganas y para alergias alimentarias',
-        'Bar con terraza panorámica abierto de 12:00 a 24:00'
+        'Heladera',
+        'Cocina a gas con horno',
+        'Horno electrico',
+        'Juego completo de valijja',
+        'Barra para desayunar',
+        'Pava electrica'
       ],
-      image: 'assets/images/facility-restaurant.jpg'
+      image: 'assets/images/gallery/img18.jpeg'
     },
     {
       id: 'pool',
       title: 'Piscina y Zonas de Relax',
-      description: 'Disfruta de nuestra piscina exterior con vistas panorámicas al valle. La zona de piscina está equipada con tumbonas, sombrillas y servicio de bar, todo lo necesario para disfrutar de un día de relax al sol.',
+      description: 'Disfruta de nuestra piscina exterior. La zona de piscina está equipada con sombrillas y todo lo necesario para disfrutar de un día de relax al sol.',
       features: [
-        'Piscina exterior (abierta de mayo a septiembre)',
-        'Tumbonas y sombrillas gratuitas',
+        'Piscina exterior (abierta de diciemre a abril)',
+        'Sombrillas',
         'Toallas de piscina disponibles',
-        'Zona de hamacas bajo los árboles',
-        'Jardines para pasear y relajarse',
-        'Servicio de bebidas y snacks'
+        'Zona de descanso bajo techo',
+        'Barra de seguridad para los  niños'
       ],
-      image: 'assets/images/facility-pool.jpg'
+      image: 'assets/images/gallery/img73.jpeg'
     },
     {
       id: 'wellness',
-      title: 'Área de Bienestar',
-      description: 'Nuestro espacio dedicado al bienestar te ofrece un remanso de paz para equilibrar cuerpo y mente. Después de un día de actividades, no hay nada mejor que relajarse con un buen masaje o en nuestro jacuzzi.',
+      title: 'Área de Descanso',
+      description: 'Nuestro espacio dedicado al bienestar te ofrece un remanso de paz para equilibrar cuerpo y mente. Después de un día de actividades, no hay nada mejor que relajarse.',
       features: [
-        'Sala de masajes con terapeutas profesionales',
-        'Tratamientos corporales y faciales con productos naturales',
-        'Jacuzzi exterior con vistas panorámicas',
-        'Sauna finlandesa',
-        'Sesiones de yoga en el jardín (temporada de verano)',
-        'Servicio de infusiones y aguas aromatizadas'
+        'Servcio de TV con plataformas de streaming',
+        'Chimenea',
+        'Sofa',
+        'Espacio de juego para los mas pequeños'
       ],
-      image: 'assets/images/facility-wellness.jpg'
+      image: 'assets/images/gallery/img5.jpeg'
     },
     {
-      id: 'activities',
-      title: 'Actividades y Excursiones',
-      description: 'En nuestra casa de campo ofrecemos una amplia variedad de actividades para que puedas disfrutar de la naturaleza y la cultura local. Ya sea que busques aventura o cultura, tenemos opciones para todos los gustos.',
+      id: 'living',
+      title: 'Comedor',
+      description: 'En nuestra casa de campo ofrecemos una mesa comedor moderna para compartir en familia almuerzos, meriendas, cenas.',
       features: [
-        'Rutas de senderismo guiadas por el entorno natural',
-        'Paseos a caballo para todos los niveles',
-        'Alquiler de bicicletas de montaña',
-        'Talleres de cocina tradicional',
-        'Visitas a productores locales (bodegas, queserías)',
-        'Actividades especiales para niños en temporada alta'
+        'Mesa ovalada con diseño moderno',
+        'Juego de 4 sillas',
+        'Manteles e individuales'
       ],
-      image: 'assets/images/facility-activities.jpg'
+      image: 'assets/images/gallery/img80.jpeg'
     },
     {
       id: 'garden',
-      title: 'Huerto y Jardines',
-      description: 'Nuestro huerto ecológico es una de las joyas de la casa. Cultivamos una gran variedad de verduras, frutas y hierbas aromáticas que se utilizan en la cocina del restaurante. Te invitamos a visitarlo y conocer nuestro compromiso con la sostenibilidad.',
+      title: 'Jardín',
+      description: 'Sin duda nuestro jarin es una de las joyas de la casa. Es un espacio de relajacion, juego y cualquier actividad que se quiera hacer al aire lbre.',
       features: [
-        'Huerto ecológico con visitas guiadas',
-        'Jardines temáticos con plantas autóctonas',
-        'Espacio para picnics',
-        'Zona de juegos infantiles al aire libre',
-        'Mirador con vistas panorámicas',
-        'Pequeño estanque con peces'
+        'Espacio verde tanquilo para disfrutar de un mate en invierno o tomar sol en verano',
+        'Servicio de jardineria cada 7 dias'
       ],
-      image: 'assets/images/facility-garden.jpg'
+      image: 'assets/images/gallery/img82.jpeg'
     },
     {
       id: 'lounge',
-      title: 'Salones Comunes',
-      description: 'Nuestros salones comunes son espacios acogedores donde podrás relajarte, leer, jugar o simplemente disfrutar de una buena conversación junto a la chimenea o en nuestra biblioteca.',
+      title: 'Comedor Secundario',
+      description: 'Ofretemos dos espacios de comedor, cerca de la cocina para disfrutar de todo "recien salido del horno".',
       features: [
-        'Salón con chimenea y vistas al jardín',
-        'Biblioteca con selección de libros y juegos de mesa',
-        'Sala de TV con plataformas de streaming',
-        'Conexión Wi-Fi gratuita en todas las áreas',
-        'Espacio de coworking para necesidades laborales',
-        'Rincón del café disponible 24 horas'
+        'Comedor rustico',
+        'Juego de 4 sillas de madera',
+        'Ventilador de techo',
+        'Manteles e individuales'
       ],
-      image: 'assets/images/facility-lounge.jpg'
+      image: 'assets/images/gallery/img78.jpeg'
+    },
+        {
+      id: 'principal_bathroom',
+      title: 'Baño Principal',
+      description: 'Baño principal con antebaño y ducha".',
+      features: [
+        'Antebaño',
+        'Botiquin de emergencia',
+        'Bidet',
+        'Ducha con agua F/C'
+      ],
+      image: 'assets/images/gallery/img94.jpeg'
+    },
+        {
+      id: 'secondary_bathroom',
+      title: 'Baño Secundario en Suite Matrimonial',
+      description: 'Este baño privado se encuentra en la suite matrimonial".',
+      features: [
+        'Antebaño',
+        'Botiquin de emergencia',
+        'Bidet',
+        'Ducha con agua F/C'
+      ],
+      image: 'assets/images/gallery/img97.jpeg'
     }
   ];
   
   additionalServices = [
     {
       icon: 'fas fa-car',
-      title: 'Alquiler de Vehículos',
-      description: 'Servicio de alquiler de coches para explorar la zona a tu ritmo.',
-      price: 'Desde 50€/día'
+      title: 'Cuidado de Vehículos',
+      description: 'Persona encargada de custodiar todos tus vehiculos dentro de la propiedad.',
+      price: 'Desde 2.000$/día'
     },
     {
       icon: 'fas fa-utensils',
-      title: 'Cesta de Picnic',
-      description: 'Prepararemos una deliciosa cesta con productos locales para tus excursiones.',
-      price: '25€ por persona'
+      title: 'Desayuno incluido',
+      description: 'Con la reserva de 5 o más dias en el Sosiego te ofrecemos un desayuno casero con productos locales.',
+      price: 'En promoción'
     },
     {
       icon: 'fas fa-glass-cheers',
       title: 'Celebraciones Especiales',
-      description: 'Organizamos eventos como cumpleaños, aniversarios o pequeñas reuniones familiares.',
+      description: 'Organizamos eventos como cumpleaños, casamientos o pequeñas reuniones familiares.',
       price: 'Consultar precios'
     },
     {
-      icon: 'fas fa-baby',
-      title: 'Servicio de Niñera',
-      description: 'Personal cualificado para cuidar de los más pequeños mientras disfrutas de tu tiempo.',
-      price: '15€/hora'
+      icon: 'fas fa-spa',
+      title: 'Servicio de Masajes',
+      description: 'Personal cualificado para realizar una sesion de masajes para descontracturar y aliviar los musculos.',
+      price: '15.000$/persona'
     },
     {
       icon: 'fas fa-shuttle-van',
       title: 'Traslados',
       description: 'Servicio de recogida y traslado a estaciones de tren o aeropuertos cercanos.',
-      price: 'Desde 30€'
+      price: 'Desde 20.000$€'
     },
     {
       icon: 'fas fa-shopping-basket',
