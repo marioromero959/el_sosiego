@@ -51,6 +51,19 @@ export class ReservationService {
       amenities: ['Wi-Fi', 'Baño privado', 'Sala de estar'],
       images: ['assets/images/gallery/img98.jpeg', 'assets/images/gallery/img99.jpeg', 'assets/images/gallery/img100.jpeg'],
       available: true
+    },
+    {
+      id: 4,
+      name: 'Oficina',
+      type: 'oficina',
+      description: 'Ambiente profesional y confortable, ideal para enfocarte en tus proyectos.',
+      capacity: 1,
+      pricePerNight: 180,
+      size: 50,
+      beds: '1 Cama',
+      amenities: ['Wi-Fi', 'Escritorio', 'Silla de oficina'],
+      images: ['assets/images/gallery/img64.jpeg','assets/images/gallery/img65.jpeg','assets/images/gallery/img66.jpeg','assets/images/gallery/img67.jpeg'],
+      available: true
     }
   ];
 

@@ -19,6 +19,12 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
   currentImageIndex: number[] = [];
   autoSlideIntervals: any[] = [];
   
+  // Estado del modal de pantalla completa
+  isFullscreenOpen: boolean = false;
+  fullscreenRoomIndex: number = 0;
+  fullscreenImageIndex: number = 0;
+  fullscreenAutoSlideInterval: any = null;
+  
   // Características comunes de las habitaciones
   commonFeatures = [
     {
@@ -31,25 +37,25 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
       title: 'Climatización',
       description: 'Control individual de temperatura en cada habitación'
     },
+    // {
+    //   icon: 'fas fa-coffee',
+    //   title: 'Café y Té',
+    //   description: 'Set de café y té con hervidor eléctrico'
+    // },
+    // {
+    //   icon: 'fas fa-tv',
+    //   title: 'Smart TV',
+    //   description: 'Televisor con canales internacionales y conexión a plataformas de streaming'
+    // },
+    // {
+    //   icon: 'fas fa-bath',
+    //   title: 'Amenities de Baño',
+    //   description: 'Productos de baño ecológicos y secador de pelo'
+    // },
     {
-      icon: 'fas fa-coffee',
-      title: 'Café y Té',
-      description: 'Set de café y té con hervidor eléctrico'
-    },
-    {
-      icon: 'fas fa-tv',
-      title: 'Smart TV',
-      description: 'Televisor con canales internacionales y conexión a plataformas de streaming'
-    },
-    {
-      icon: 'fas fa-bath',
-      title: 'Amenities de Baño',
-      description: 'Productos de baño ecológicos y secador de pelo'
-    },
-    {
-      icon: 'fas fa-concierge-bell',
-      title: 'Servicio de Habitación',
-      description: 'Disponible de 7:00 a 22:00'
+      icon: 'fas fa-bed',
+      title: 'Servicio de Mantas',
+      description: 'Mantas y acolchados a disponibilidad'
     }
   ];
 
@@ -66,6 +72,12 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
         clearInterval(this.autoSlideIntervals[i]);
       }
     }
+    // Limpiar intervalo del modal
+    if (this.fullscreenAutoSlideInterval) {
+      clearInterval(this.fullscreenAutoSlideInterval);
+    }
+    // Remover event listener del teclado
+    document.removeEventListener('keydown', this.handleKeyboardEvents.bind(this));
   }
 
   loadRooms(): void {
@@ -155,6 +167,125 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
         event.preventDefault();
         this.nextImage(roomIndex, imageCount);
         break;
+    }
+  }
+
+  // === MÉTODOS PARA MODAL DE PANTALLA COMPLETA ===
+
+  openFullscreen(roomIndex: number, imageIndex: number = 0): void {
+    this.isFullscreenOpen = true;
+    this.fullscreenRoomIndex = roomIndex;
+    this.fullscreenImageIndex = imageIndex;
+    
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
+    
+    // Agregar event listener para teclado
+    document.addEventListener('keydown', this.handleKeyboardEvents.bind(this));
+    
+    // Iniciar auto-slide en modal si hay múltiples imágenes
+    const room = this.rooms[roomIndex];
+    if (room.images && room.images.length > 1) {
+      this.startFullscreenAutoSlide();
+    }
+  }
+
+  closeFullscreen(): void {
+    this.isFullscreenOpen = false;
+    
+    // Restaurar scroll del body
+    document.body.style.overflow = '';
+    
+    // Remover event listener del teclado
+    document.removeEventListener('keydown', this.handleKeyboardEvents.bind(this));
+    
+    // Detener auto-slide del modal
+    this.stopFullscreenAutoSlide();
+  }
+
+  private handleKeyboardEvents(event: KeyboardEvent): void {
+    if (!this.isFullscreenOpen) return;
+
+    const room = this.rooms[this.fullscreenRoomIndex];
+    const imageCount = room.images?.length || 0;
+
+    switch (event.key) {
+      case 'Escape':
+        event.preventDefault();
+        this.closeFullscreen();
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        this.fullscreenPrevImage();
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        this.fullscreenNextImage();
+        break;
+    }
+  }
+
+  fullscreenNextImage(): void {
+    const room = this.rooms[this.fullscreenRoomIndex];
+    const imageCount = room.images?.length || 0;
+    if (imageCount <= 1) return;
+    
+    this.fullscreenImageIndex = (this.fullscreenImageIndex + 1) % imageCount;
+    this.resetFullscreenAutoSlide();
+  }
+
+  fullscreenPrevImage(): void {
+    const room = this.rooms[this.fullscreenRoomIndex];
+    const imageCount = room.images?.length || 0;
+    if (imageCount <= 1) return;
+    
+    this.fullscreenImageIndex = this.fullscreenImageIndex === 0 
+      ? imageCount - 1 
+      : this.fullscreenImageIndex - 1;
+    this.resetFullscreenAutoSlide();
+  }
+
+  goToFullscreenImage(imageIndex: number): void {
+    this.fullscreenImageIndex = imageIndex;
+    this.resetFullscreenAutoSlide();
+  }
+
+  private startFullscreenAutoSlide(): void {
+    this.fullscreenAutoSlideInterval = setInterval(() => {
+      this.fullscreenNextImage();
+    }, 5000); // 5 segundos en fullscreen
+  }
+
+  private stopFullscreenAutoSlide(): void {
+    if (this.fullscreenAutoSlideInterval) {
+      clearInterval(this.fullscreenAutoSlideInterval);
+      this.fullscreenAutoSlideInterval = null;
+    }
+  }
+
+  private resetFullscreenAutoSlide(): void {
+    this.stopFullscreenAutoSlide();
+    const room = this.rooms[this.fullscreenRoomIndex];
+    if (room.images && room.images.length > 1) {
+      this.startFullscreenAutoSlide();
+    }
+  }
+
+  onFullscreenMouseEnter(): void {
+    this.stopFullscreenAutoSlide();
+  }
+
+  onFullscreenMouseLeave(): void {
+    const room = this.rooms[this.fullscreenRoomIndex];
+    if (room.images && room.images.length > 1) {
+      this.startFullscreenAutoSlide();
+    }
+  }
+
+  // Cerrar modal al hacer click en el overlay (fuera de la imagen)
+  onOverlayClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeFullscreen();
     }
   }
 }

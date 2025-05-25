@@ -63,7 +63,7 @@
     
     <!-- Rooms -->
     <div *ngIf="!isLoading">
-      <div *ngFor="let room of rooms; let roomIndex = index" class="room-item" [class.bg-light-custom]="roomIndex % 2 === 1">
+      <div *ngFor="let room of rooms; let roomIndex = index" class="room-item">
         <div class="container">
           <div class="row align-items-center" [class.flex-row-reverse]="roomIndex % 2 === 1">
             <div class="col-lg-6 mb-4 mb-lg-0">
@@ -85,8 +85,10 @@
                          [attr.aria-hidden]="imgIndex !== getCurrentImageIndex(roomIndex)">
                       <img [src]="image" 
                            [alt]="room.name + ' - Imagen ' + (imgIndex + 1)"
-                           class="img-fluid rounded shadow"
-                           loading="lazy">
+                           class="img-fluid rounded shadow slider-clickable-image"
+                           loading="lazy"
+                           (click)="openFullscreen(roomIndex, imgIndex)"
+                           title="Click para ver en pantalla completa">
                     </div>
                   </div>
                   
@@ -154,7 +156,7 @@
                   </span>
                 </div>
                 
-                <!-- Precio y botón de reserva (descomentado) -->
+                <!-- Precio y botón de reserva -->
                 <!-- <div class="room-price-container">
                   <div class="room-price">
                     <span class="price">{{room.pricePerNight}}€</span> / noche
@@ -191,7 +193,7 @@
           </div>
           <h4>Horarios</h4>
           <ul>
-            <li><strong>Check-in:</strong> 15:00 - 20:00h</li>
+            <li><strong>Check-in:</strong> 10:00 - 15:00h</li>
             <li><strong>Check-out:</strong> Hasta las 12:00h</li>
             <li>Posibilidad de early check-in y late check-out (sujeto a disponibilidad)</li>
           </ul>
@@ -207,7 +209,7 @@
           <ul>
             <li>Cancelación gratuita hasta 7 días antes</li>
             <li>Entre 7 y 3 días: 50% del total</li>
-            <li>Menos de 3 días o no-show: 100% del total</li>
+            <li>Menos de 3 días: 100% del total</li>
             <li>Seguro de cancelación disponible</li>
           </ul>
         </div>
@@ -223,7 +225,7 @@
             <li>Se requiere un depósito del 20% para confirmar la reserva</li>
             <li>Habitaciones para no fumadores</li>
             <li>Mascotas permitidas en habitaciones específicas (suplemento)</li>
-            <li>Cuna disponible sin cargo (bajo petición)</li>
+            <!-- <li>Cuna disponible sin cargo (bajo petición)</li> -->
           </ul>
         </div>
       </div>
@@ -255,7 +257,7 @@
             </h2>
             <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accommodationFaq">
               <div class="accordion-body">
-                Sí, todas nuestras habitaciones disponen de sistema de climatización individual que permite regular tanto la calefacción como el aire acondicionado según tus preferencias.
+                No, para nuestras habitaciones se disponen de un sistema de climatización general que permite regular tanto la calefacción como el aire acondicionado según tus preferencias.
               </div>
             </div>
           </div>
@@ -269,7 +271,7 @@
             </h2>
             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accommodationFaq">
               <div class="accordion-body">
-                ¡Por supuesto! Nuestra Suite Familiar es ideal para familias con niños. Además, disponemos de cunas gratuitas (bajo petición) y camas supletorias para niños (con un pequeño suplemento). También contamos con menú infantil en el restaurante y actividades adaptadas para los más pequeños.
+                ¡Por supuesto! Nuestra Casa es ideal para familias con niños. Además, disponemos de un piso protector para los mas peques.
               </div>
             </div>
           </div>
@@ -283,13 +285,13 @@
             </h2>
             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accommodationFaq">
               <div class="accordion-body">
-                Sí, disponemos de Wi-Fi gratuito de alta velocidad en todas las habitaciones y zonas comunes de la casa. La contraseña se proporciona durante el check-in.
+                Sí, disponemos de Wi-Fi gratuito de alta velocidad en todas las habitaciones de 150mbps y zonas comunes de la casa. La contraseña se proporciona durante el check-in.
               </div>
             </div>
           </div>
           
           <!-- FAQ Item 4 -->
-          <div class="accordion-item">
+          <!-- <div class="accordion-item">
             <h2 class="accordion-header" id="headingFour">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
                 ¿Puedo solicitar habitaciones comunicadas?
@@ -300,7 +302,7 @@
                 Disponemos de varias habitaciones comunicadas que son ideales para familias numerosas o grupos. Te recomendamos solicitarlas con antelación ya que están sujetas a disponibilidad.
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -308,10 +310,98 @@
 </section>
 
 <!-- CTA Section -->
-<section class="cta-section">
+<section class="cta-section my-4">
   <div class="container text-center">
-    <h2 class="text-white">¿Listo para reservar tu estancia?</h2>
-    <p class="text-white mb-4">Disfruta de la tranquilidad y el confort de nuestra casa de campo</p>
-    <a routerLink="/reservar" class="btn btn-light btn-lg">Reservar ahora</a>
+    <h2 class="text-primary-ligth">¿Querés conocernos en persona?</h2>
+    <p class="text-primary mb-4">Reserva tu estancia y sé parte de nuestra historia</p>
+    <a routerLink="/reservar" class="btn btn-outline-primary btn-lg">Reservar ahora</a>
   </div>
 </section>
+
+<!-- Modal de pantalla completa -->
+<div *ngIf="isFullscreenOpen" 
+     class="fullscreen-modal" 
+     (click)="onOverlayClick($event)">
+  
+  <div class="fullscreen-content"
+       (mouseenter)="onFullscreenMouseEnter()"
+       (mouseleave)="onFullscreenMouseLeave()">
+    
+    <!-- Botón cerrar -->
+    <button class="fullscreen-close-btn" 
+            (click)="closeFullscreen()"
+            type="button"
+            aria-label="Cerrar vista de pantalla completa"
+            title="Cerrar (ESC)">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <!-- Imagen principal -->
+    <div class="fullscreen-image-container">
+      <img [src]="rooms[fullscreenRoomIndex]?.images?.[fullscreenImageIndex]" 
+           [alt]="rooms[fullscreenRoomIndex]?.name + ' - Imagen ' + (fullscreenImageIndex + 1)"
+           class="fullscreen-image">
+    </div>
+    
+    <!-- Controles de navegación -->
+    <div *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1" 
+         class="fullscreen-controls">
+      
+      <!-- Botón anterior -->
+      <button class="fullscreen-nav-btn fullscreen-nav-prev"
+              (click)="fullscreenPrevImage()"
+              type="button"
+              aria-label="Imagen anterior"
+              title="Imagen anterior (←)">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <!-- Botón siguiente -->
+      <button class="fullscreen-nav-btn fullscreen-nav-next"
+              (click)="fullscreenNextImage()"
+              type="button"
+              aria-label="Siguiente imagen"
+              title="Siguiente imagen (→)">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+    
+    <!-- Información de la habitación -->
+    <div class="fullscreen-info">
+      <h3>{{rooms[fullscreenRoomIndex]?.name}}</h3>
+      <p *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1">
+        {{fullscreenImageIndex + 1}} de {{rooms[fullscreenRoomIndex].images.length}}
+      </p>
+    </div>
+    
+    <!-- Indicadores de puntos -->
+    <div *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1" 
+         class="fullscreen-dots">
+      <button *ngFor="let image of rooms[fullscreenRoomIndex].images; let dotIndex = index"
+              class="fullscreen-dot"
+              [class.active]="dotIndex === fullscreenImageIndex"
+              (click)="goToFullscreenImage(dotIndex)"
+              type="button"
+              [attr.aria-label]="'Ir a imagen ' + (dotIndex + 1)"
+              [attr.title]="'Imagen ' + (dotIndex + 1)">
+      </button>
+    </div>
+    
+    <!-- Miniaturas (thumbnails) -->
+    <div *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1" 
+         class="fullscreen-thumbnails">
+      <div class="thumbnails-container">
+        <button *ngFor="let image of rooms[fullscreenRoomIndex].images; let thumbIndex = index"
+                class="thumbnail-btn"
+                [class.active]="thumbIndex === fullscreenImageIndex"
+                (click)="goToFullscreenImage(thumbIndex)"
+                type="button"
+                [attr.aria-label]="'Ver imagen ' + (thumbIndex + 1)">
+          <img [src]="image" 
+               [alt]="'Miniatura ' + (thumbIndex + 1)"
+               class="thumbnail-image">
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
