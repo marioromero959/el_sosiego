@@ -1,6 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+
+// Interface para las imágenes individuales
+interface GalleryImage {
+  src: string;
+  thumb: string;
+  alt: string;
+}
+
+// Interface para los items de la galería
+interface GalleryItem {
+  id: number;
+  title: string;
+  category: string;
+  featured: boolean;
+  images: GalleryImage[];
+}
 
 @Component({
   selector: 'app-gallery',
@@ -9,174 +25,403 @@ import { RouterLink } from '@angular/router';
   templateUrl: './gallery.component.html',
   styleUrl: './gallery.component.scss'
 })
-export class GalleryComponent {
+export class GalleryComponent implements OnInit, OnDestroy {
   // Categorías para filtrar las imágenes
   categories = [
     { id: 'all', name: 'Todas' },
     { id: 'rooms', name: 'Habitaciones' },
     { id: 'exterior', name: 'Exteriores' },
     { id: 'pool', name: 'Piscina' },
-    { id: 'dining', name: 'Restaurante' },
-    { id: 'activities', name: 'Actividades' }
+    { id: 'kitchen', name: 'Cocina' },
+    { id: 'bathroom', name: 'Baños' }
   ];
-  
-  // Array con todas las imágenes de la galería
-  images = [
+
+  // Array con todos los items de la galería (cada item puede tener múltiples imágenes)
+  galleryItems: GalleryItem[] = [
     {
       id: 1,
-      src: 'assets/images/gallery/room1.jpg',
-      thumb: 'assets/images/gallery/thumbs/room1.jpg',
-      alt: 'Habitación Estándar',
+      title: 'Habitación Estándar',
       category: 'rooms',
-      featured: true
+      featured: true,
+      images: [
+        {
+          src: 'assets/images/gallery/img12.jpeg',
+          thumb: 'assets/images/gallery/img12.jpeg',
+          alt: 'Habitación Estándar - Vista general'
+        },
+        {
+          src: 'assets/images/gallery/img13.jpeg',
+          thumb: 'assets/images/gallery/img13.jpeg',
+          alt: 'Habitación Estándar - Baño'
+        },
+        {
+          src: 'assets/images/gallery/img14.jpeg',
+          thumb: 'assets/images/gallery/img14.jpeg',
+          alt: 'Habitación Estándar - Vista desde la ventana'
+        },
+        {
+          src: 'assets/images/gallery/img15.jpeg',
+          thumb: 'assets/images/gallery/img15.jpeg',
+          alt: 'Habitación Estándar - Vista desde la ventana'
+        }
+      ]
     },
     {
       id: 2,
-      src: 'assets/images/gallery/room2.jpg',
-      thumb: 'assets/images/gallery/thumbs/room2.jpg',
-      alt: 'Habitación Superior',
+      title: 'Habitación Superior',
       category: 'rooms',
-      featured: false
+      featured: false,
+      images: [
+        {
+          src: 'assets/images/gallery/img89.jpeg',
+          thumb: 'assets/images/gallery/img89.jpeg',
+          alt: 'Habitación Superior - Cama principal'
+        },
+        {
+          src: 'assets/images/gallery/img90.jpeg',
+          thumb: 'assets/images/gallery/img90.jpeg',
+          alt: 'Habitación Superior - Área de estar'
+        }
+      ]
     },
     {
       id: 3,
-      src: 'assets/images/gallery/room3.jpg',
-      thumb: 'assets/images/gallery/thumbs/room3.jpg',
-      alt: 'Suite Familiar',
+      title: 'Suite Matrimonial',
       category: 'rooms',
-      featured: true
+      featured: true,
+      images: [
+        {
+          src: 'assets/images/gallery/img1.jpeg',
+          thumb: 'assets/images/gallery/img1.jpeg',
+          alt: 'Suite Matrimonial - Dormitorio'
+        },
+        {
+          src: 'assets/images/gallery/img98.jpeg',
+          thumb: 'assets/images/gallery/img98.jpeg',
+          alt: 'Suite Matrimonial - Sala de estar'
+        },
+        {
+          src: 'assets/images/gallery/img99.jpeg',
+          thumb: 'assets/images/gallery/img99.jpeg',
+          alt: 'Suite Matrimonial - Baño con jacuzzi'
+        },
+        {
+          src: 'assets/images/gallery/img100.jpeg',
+          thumb: 'assets/images/gallery/img100.jpeg',
+          alt: 'Suite Matrimonial - Terraza privada'
+        }
+      ]
     },
     {
       id: 4,
-      src: 'assets/images/gallery/exterior1.jpg',
-      thumb: 'assets/images/gallery/thumbs/exterior1.jpg',
-      alt: 'Fachada Principal',
-      category: 'exterior',
-      featured: true
+      title: 'Cocina comedor',
+      category: 'kitchen',
+      featured: true,
+      images: [
+        {
+          src: 'assets/images/gallery/img4.jpeg',
+          thumb: 'assets/images/gallery/img4.jpeg',
+          alt: 'Fachada principal de día'
+        },
+        {
+          src: 'assets/images/gallery/img78.jpeg',
+          thumb: 'assets/images/gallery/img78.jpeg',
+          alt: 'Fachada principal de noche'
+        },
+        {
+          src: 'assets/images/gallery/img68.jpeg',
+          thumb: 'assets/images/gallery/img68.jpeg',
+          alt: 'Jardines y paisajismo'
+        },
+        {
+          src: 'assets/images/gallery/img18.jpeg',
+          thumb: 'assets/images/gallery/img18.jpeg',
+          alt: 'Jardines y paisajismo'
+        },
+        {
+          src: 'assets/images/gallery/img23.jpeg',
+          thumb: 'assets/images/gallery/img23.jpeg',
+          alt: 'Jardines y paisajismo'
+        }
+      ]
     },
     {
       id: 5,
-      src: 'assets/images/gallery/exterior2.jpg',
-      thumb: 'assets/images/gallery/thumbs/exterior2.jpg',
-      alt: 'Jardines',
+      title: 'Jardines y Naturaleza',
       category: 'exterior',
-      featured: false
+      featured: false,
+      images: [
+        {
+          src: 'assets/images/gallery/img49.jpeg',
+          thumb: 'assets/images/gallery/img49.jpeg',
+          alt: 'Jardines principales'
+        },
+        {
+          src: 'assets/images/gallery/img48.jpeg',
+          thumb: 'assets/images/gallery/img48.jpeg',
+          alt: 'Senderos y caminos'
+        },
+        {
+          src: 'assets/images/gallery/img25.jpeg',
+          thumb: 'assets/images/gallery/img25.jpeg',
+          alt: 'Senderos y caminos'
+        },
+        {
+          src: 'assets/images/gallery/img24.jpeg',
+          thumb: 'assets/images/gallery/img24.jpeg',
+          alt: 'Senderos y caminos'
+        },
+        {
+          src: 'assets/images/gallery/img27.jpeg',
+          thumb: 'assets/images/gallery/img27.jpeg',
+          alt: 'Senderos y caminos'
+        }
+      ]
     },
     {
       id: 6,
-      src: 'assets/images/gallery/pool1.jpg',
-      thumb: 'assets/images/gallery/thumbs/pool1.jpg',
-      alt: 'Piscina Exterior',
+      title: 'Piscina y Área Acuática',
       category: 'pool',
-      featured: true
+      featured: true,
+      images: [
+        {
+          src: 'assets/images/gallery/img74.jpeg',
+          thumb: 'assets/images/gallery/img74.jpeg',
+          alt: 'Piscina principal'
+        },
+        {
+          src: 'assets/images/gallery/img73.jpeg',
+          thumb: 'assets/images/gallery/img73.jpeg',
+          alt: 'Área de relajación junto a la piscina'
+        }
+      ]
     },
     {
       id: 7,
-      src: 'assets/images/gallery/pool2.jpg',
-      thumb: 'assets/images/gallery/thumbs/pool2.jpg',
-      alt: 'Zona de Relax',
-      category: 'pool',
-      featured: false
+      title: 'Baño Secundario(en suite)',
+      category: 'bathroom',
+      featured: false,
+      images: [
+        {
+          src: 'assets/images/gallery/img94.jpeg',
+          thumb: 'assets/images/gallery/img94.jpeg',
+          alt: 'Baño Principal'
+        },
+        {
+          src: 'assets/images/gallery/img95.jpeg',
+          thumb: 'assets/images/gallery/img95.jpeg',
+          alt: 'Baño Principal'
+        },
+        {
+          src: 'assets/images/gallery/img96.jpeg',
+          thumb: 'assets/images/gallery/img96.jpeg',
+          alt: 'Baño Principal'
+        },
+        {
+          src: 'assets/images/gallery/img97.jpeg',
+          thumb: 'assets/images/gallery/img97.jpeg',
+          alt: 'Baño Principal'
+        },
+      ]
     },
     {
       id: 8,
-      src: 'assets/images/gallery/dining1.jpg',
-      thumb: 'assets/images/gallery/thumbs/dining1.jpg',
-      alt: 'Restaurante',
-      category: 'dining',
-      featured: true
+      title: 'Baño Principal',
+      category: 'bathroom',
+      featured: false,
+      images: [
+        {
+          src: 'assets/images/gallery/img8.jpeg',
+          thumb: 'assets/images/gallery/img8.jpeg',
+          alt: 'Hamacas y sombrillas'
+        },
+        {
+          src: 'assets/images/gallery/img9.jpeg',
+          thumb: 'assets/images/gallery/img9.jpeg',
+          alt: 'Hamacas y sombrillas'
+        },
+        {
+          src: 'assets/images/gallery/img11.jpeg',
+          thumb: 'assets/images/gallery/img11.jpeg',
+          alt: 'Hamacas y sombrillas'
+        },
+        {
+          src: 'assets/images/gallery/img16.jpeg',
+          thumb: 'assets/images/gallery/img16.jpeg',
+          alt: 'Hamacas y sombrillas'
+        },
+      ]
     },
-    {
-      id: 9,
-      src: 'assets/images/gallery/dining2.jpg',
-      thumb: 'assets/images/gallery/thumbs/dining2.jpg',
-      alt: 'Buffet Desayuno',
-      category: 'dining',
-      featured: false
-    },
-    {
-      id: 10,
-      src: 'assets/images/gallery/activities1.jpg',
-      thumb: 'assets/images/gallery/thumbs/activities1.jpg',
-      alt: 'Senderismo',
-      category: 'activities',
-      featured: false
-    },
-    {
-      id: 11,
-      src: 'assets/images/gallery/activities2.jpg',
-      thumb: 'assets/images/gallery/thumbs/activities2.jpg',
-      alt: 'Montar a Caballo',
-      category: 'activities',
-      featured: true
-    },
-    {
-      id: 12,
-      src: 'assets/images/gallery/exterior3.jpg',
-      thumb: 'assets/images/gallery/thumbs/exterior3.jpg',
-      alt: 'Vistas Panorámicas',
-      category: 'exterior',
-      featured: false
-    }
+    // {
+    //   id: 8,
+    //   title: 'Restaurante y Gastronomía',
+    //   category: 'dining',
+    //   featured: true,
+    //   images: [
+    //     {
+    //       src: 'assets/images/gallery/restaurant-1.jpeg',
+    //       thumb: 'assets/images/gallery/restaurant-1.jpeg',
+    //       alt: 'Restaurante principal'
+    //     },
+    //     {
+    //       src: 'assets/images/gallery/restaurant-2.jpeg',
+    //       thumb: 'assets/images/gallery/restaurant-2.jpeg',
+    //       alt: 'Terraza del restaurante'
+    //     },
+    //     {
+    //       src: 'assets/images/gallery/restaurant-3.jpeg',
+    //       thumb: 'assets/images/gallery/restaurant-3.jpeg',
+    //       alt: 'Cocina y preparación'
+    //     }
+    //   ]
+    // },
+    // {
+    //   id: 9,
+    //   title: 'Desayuno y Buffet',
+    //   category: 'dining',
+    //   featured: false,
+    //   images: [
+    //     {
+    //       src: 'assets/images/gallery/breakfast-1.jpeg',
+    //       thumb: 'assets/images/gallery/breakfast-1.jpeg',
+    //       alt: 'Buffet de desayuno'
+    //     },
+    //     {
+    //       src: 'assets/images/gallery/breakfast-2.jpeg',
+    //       thumb: 'assets/images/gallery/breakfast-2.jpeg',
+    //       alt: 'Productos locales'
+    //     }
+    //   ]
+    // },
+    // {
+    //   id: 10,
+    //   title: 'Actividades y Aventura',
+    //   category: 'activities',
+    //   featured: false,
+    //   images: [
+    //     {
+    //       src: 'assets/images/gallery/activities-1.jpeg',
+    //       thumb: 'assets/images/gallery/activities-1.jpeg',
+    //       alt: 'Senderismo y trekking'
+    //     },
+    //     {
+    //       src: 'assets/images/gallery/activities-2.jpeg',
+    //       thumb: 'assets/images/gallery/activities-2.jpeg',
+    //       alt: 'Cabalgatas'
+    //     },
+    //     {
+    //       src: 'assets/images/gallery/activities-3.jpeg',
+    //       thumb: 'assets/images/gallery/activities-3.jpeg',
+    //       alt: 'Avistamiento de aves'
+    //     }
+    //   ]
+    // }
   ];
   
   // Variables para el control de la galería
   selectedCategory: string = 'all';
-  filteredImages = [...this.images];
+  filteredItems: GalleryItem[] = [...this.galleryItems];
   lightboxActive: boolean = false;
-  currentImage: any = null;
+  currentItem: GalleryItem | null = null;
+  currentImageIndex: number = 0;
   
-  // Método para filtrar imágenes por categoría
-  filterImages(category: string) {
+  ngOnInit(): void {
+    // Inicializar con todos los items
+    this.filterItems('all');
+  }
+  
+  ngOnDestroy(): void {
+    // Limpiar eventos y restaurar scroll si es necesario
+    if (this.lightboxActive) {
+      document.body.style.overflow = '';
+    }
+  }
+  
+  // Método para filtrar items por categoría
+  filterItems(category: string): void {
     this.selectedCategory = category;
     
     if (category === 'all') {
-      this.filteredImages = [...this.images];
+      this.filteredItems = [...this.galleryItems];
     } else {
-      this.filteredImages = this.images.filter(image => image.category === category);
+      this.filteredItems = this.galleryItems.filter(item => item.category === category);
     }
   }
   
   // Métodos para el control del lightbox
-  openLightbox(image: any) {
-    this.currentImage = image;
+  openLightbox(item: GalleryItem, imageIndex: number = 0): void {
+    this.currentItem = item;
+    this.currentImageIndex = imageIndex;
     this.lightboxActive = true;
     // Bloquear el scroll del body cuando el lightbox está activo
     document.body.style.overflow = 'hidden';
   }
   
-  closeLightbox() {
+  closeLightbox(): void {
     this.lightboxActive = false;
+    this.currentItem = null;
+    this.currentImageIndex = 0;
     // Restaurar el scroll del body
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = '';
   }
   
-  navigateLightbox(direction: number) {
-    const currentIndex = this.filteredImages.findIndex(img => img.id === this.currentImage.id);
-    let newIndex = currentIndex + direction;
+  navigateLightbox(direction: number): void {
+    if (!this.currentItem || this.currentItem.images.length <= 1) return;
     
-    // Asegurar que el índice esté dentro de los límites
-    if (newIndex < 0) {
-      newIndex = this.filteredImages.length - 1;
-    } else if (newIndex >= this.filteredImages.length) {
-      newIndex = 0;
+    this.currentImageIndex += direction;
+    
+    // Navegación circular
+    if (this.currentImageIndex < 0) {
+      this.currentImageIndex = this.currentItem.images.length - 1;
+    } else if (this.currentImageIndex >= this.currentItem.images.length) {
+      this.currentImageIndex = 0;
     }
-    
-    this.currentImage = this.filteredImages[newIndex];
   }
   
-  // Manejador de eventos de teclado para el lightbox
-  handleKeydown(event: KeyboardEvent) {
+  // Ir directamente a una imagen específica del item actual
+  goToImage(imageIndex: number): void {
+    if (!this.currentItem) return;
+    this.currentImageIndex = imageIndex;
+  }
+  
+  // Obtener la imagen actual
+  getCurrentImage(): GalleryImage | null {
+    if (!this.currentItem || !this.currentItem.images[this.currentImageIndex]) {
+      return null;
+    }
+    return this.currentItem.images[this.currentImageIndex];
+  }
+  
+  // Obtener el total de imágenes del item actual
+  getTotalImages(): number {
+    return this.currentItem ? this.currentItem.images.length : 0;
+  }
+  
+  // Manejador de eventos de teclado global
+  @HostListener('document:keydown', ['$event'])
+  handleKeydown(event: KeyboardEvent): void {
     if (!this.lightboxActive) return;
     
     switch (event.key) {
       case 'Escape':
+        event.preventDefault();
         this.closeLightbox();
         break;
       case 'ArrowLeft':
+      case 'a':
+      case 'A':
+        event.preventDefault();
         this.navigateLightbox(-1);
         break;
       case 'ArrowRight':
+      case 'd':
+      case 'D':
+        event.preventDefault();
+        this.navigateLightbox(1);
+        break;
+      case ' ':
+      case 'Enter':
+        event.preventDefault();
         this.navigateLightbox(1);
         break;
     }
