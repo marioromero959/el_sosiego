@@ -15,7 +15,7 @@ import { filter } from 'rxjs/operators';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'Casa de Campo - Reservas';
+  title = 'El Sosiego';
   constructor(private router: Router) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
