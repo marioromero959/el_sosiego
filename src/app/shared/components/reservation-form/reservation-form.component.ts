@@ -4,13 +4,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, RouterLink } from '@angular/router';
 import { ReservationService } from '../../../core/services/reservation.service';
 import { DateAvailability, CalendarMonth } from '../../../core/models/reservation.model';
-import { format, addDays, addMonths, startOfMonth, isSameDay, isBefore, isAfter } from 'date-fns';
+import { AlertModalComponent, AlertModalData } from '../alert-modal/alert-modal.component';
+import { format, addDays, addMonths, startOfMonth, endOfMonth, isSameDay, isBefore, isAfter, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 @Component({
   selector: 'app-reservation-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, AlertModalComponent],
   templateUrl: './reservation-form.component.html',
   styleUrl: './reservation-form.component.scss'
 })
@@ -35,6 +36,14 @@ export class ReservationFormComponent implements OnInit {
   
   // Precio por noche
   pricePerNight: number = 0;
+  
+  // Variables para el modal de alerta
+  showAlertModal: boolean = false;
+  alertModalData: AlertModalData = {
+    title: '',
+    message: '',
+    type: 'info'
+  };
   
   constructor(
     private fb: FormBuilder,
@@ -75,10 +84,26 @@ export class ReservationFormComponent implements OnInit {
         next: (monthData) => {
           this.currentMonth = monthData;
           this.calendarLoading = false;
+          
+          // Solo recalcular precio si ambas fechas están seleccionadas y al menos una está en el mes actual
+          if (this.selectedCheckIn && this.selectedCheckOut) {
+            const checkInInMonth = this.isDateInCurrentMonth(this.selectedCheckIn);
+            const checkOutInMonth = this.isDateInCurrentMonth(this.selectedCheckOut);
+            
+            if (checkInInMonth || checkOutInMonth) {
+              // Solo recalcular precio, no verificar disponibilidad automáticamente
+              this.calculateTotalPrice();
+            }
+          }
         },
         error: (error) => {
           console.error('Error loading month availability:', error);
           this.calendarLoading = false;
+          this.showAlert({
+            title: 'Error de Carga',
+            message: 'No pudimos cargar la disponibilidad del calendario. Por favor, intenta recargar la página.',
+            type: 'error'
+          });
         }
       });
   }
@@ -92,6 +117,11 @@ export class ReservationFormComponent implements OnInit {
   // Seleccionar fecha en el calendario
   selectDate(dateAvailability: DateAvailability): void {
     if (!dateAvailability.available) {
+      this.showAlert({
+        title: 'Fecha No Disponible',
+        message: 'Esta fecha no está disponible para reservas. Por favor, selecciona otra fecha.',
+        type: 'warning'
+      });
       return;
     }
 
@@ -108,13 +138,79 @@ export class ReservationFormComponent implements OnInit {
         // Si la segunda fecha es anterior, intercambiar
         this.selectedCheckOut = this.selectedCheckIn;
         this.selectedCheckIn = selectedDate;
+      } else if (isSameDay(selectedDate, this.selectedCheckIn)) {
+        // Si selecciona la misma fecha, mostrar alerta
+        this.showAlert({
+          title: 'Selección Inválida',
+          message: 'La fecha de salida debe ser diferente a la fecha de llegada. Por favor, selecciona una fecha posterior.',
+          type: 'warning'
+        });
+        return;
       } else {
         this.selectedCheckOut = selectedDate;
       }
       
-      // Calcular precio inmediatamente sin verificar disponibilidad del rango
-      this.calculateTotalPrice();
+      // Solo verificar rango si ambas fechas están en el mes actual visible
+      const checkInInMonth = this.isDateInCurrentMonth(this.selectedCheckIn);
+      const checkOutInMonth = this.isDateInCurrentMonth(this.selectedCheckOut);
+      
+      if (checkInInMonth && checkOutInMonth) {
+        // Ambas fechas están en el mes actual, verificar rango completo
+        this.checkSelectedRangeAvailability();
+      } else {
+        // Las fechas están en diferentes meses, solo calcular precio
+        this.calculateTotalPrice();
+      }
     }
+  }
+
+  // Verificar disponibilidad del rango seleccionado
+  private checkSelectedRangeAvailability(): void {
+    if (!this.selectedCheckIn || !this.selectedCheckOut || !this.currentMonth) {
+      return;
+    }
+
+    // Verificar que las fechas seleccionadas estén en el mes actual visible
+    const checkInInCurrentMonth = this.isDateInCurrentMonth(this.selectedCheckIn);
+    const checkOutInCurrentMonth = this.isDateInCurrentMonth(this.selectedCheckOut);
+    
+    // Solo verificar si al menos una fecha está en el mes actual
+    if (!checkInInCurrentMonth && !checkOutInCurrentMonth) {
+      return;
+    }
+
+    // Verificar que todas las fechas en el rango estén disponibles
+    const startDate = new Date(this.selectedCheckIn);
+    const endDate = new Date(this.selectedCheckOut);
+    
+    let currentDate = new Date(startDate);
+    let allAvailable = true;
+    
+    while (currentDate < endDate) {
+      const dayAvailability = this.currentMonth.days.find(day => 
+        isSameDay(day.date, currentDate)
+      );
+      
+      if (!dayAvailability || !dayAvailability.available) {
+        allAvailable = false;
+        break;
+      }
+      
+      currentDate = addDays(currentDate, 1);
+    }
+
+    if (!allAvailable) {
+      this.showAlert({
+        title: 'Rango No Disponible',
+        message: 'Algunas fechas en el rango seleccionado no están disponibles. Por favor, selecciona otro período.',
+        type: 'warning'
+      });
+      this.resetDateSelection();
+      return;
+    }
+
+    // Si todo está disponible, calcular precio
+    this.calculateTotalPrice();
   }
 
   // Calcular precio total
@@ -152,15 +248,24 @@ export class ReservationFormComponent implements OnInit {
         if (result.available) {
           this.showBookingForm = true;
         } else {
-          // Mostrar mensaje de error
-          alert('Lo sentimos, las fechas seleccionadas ya no están disponibles. Por favor, elige otras fechas.');
+          this.showAlert({
+            title: 'Fechas No Disponibles',
+            message: 'Lo sentimos, las fechas seleccionadas ya no están disponibles o no hay suficiente capacidad para el número de huéspedes. Por favor, elige otras fechas o reduce el número de huéspedes.',
+            type: 'error',
+            confirmText: 'Seleccionar otras fechas'
+          });
           this.resetDateSelection();
         }
       },
       error: (error) => {
         console.error('Error checking availability:', error);
         this.isLoading = false;
-        alert('Error al verificar disponibilidad. Por favor, intenta de nuevo.');
+        this.showAlert({
+          title: 'Error de Verificación',
+          message: 'Ocurrió un error al verificar la disponibilidad. Por favor, intenta de nuevo.',
+          type: 'error',
+          confirmText: 'Reintentar'
+        });
       }
     });
   }
@@ -192,11 +297,10 @@ export class ReservationFormComponent implements OnInit {
     return isAfter(date, this.selectedCheckIn) && isBefore(date, this.selectedCheckOut);
   }
 
-  // Calcular noches
+  // Calcular noches correctamente
   calculateNights(): number {
     if (!this.selectedCheckIn || !this.selectedCheckOut) return 0;
-    const diffTime = Math.abs(this.selectedCheckOut.getTime() - this.selectedCheckIn.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return differenceInDays(this.selectedCheckOut, this.selectedCheckIn);
   }
 
   // Formatear fecha
@@ -207,6 +311,13 @@ export class ReservationFormComponent implements OnInit {
   // Verificar si se pueden seleccionar fechas
   canProceedToBooking(): boolean {
     return !!(this.selectedCheckIn && this.selectedCheckOut && this.availabilityResult?.available);
+  }
+
+  // Verificar si una fecha está en el mes actual visible
+  private isDateInCurrentMonth(date: Date): boolean {
+    const currentMonthStart = startOfMonth(this.currentDate);
+    const currentMonthEnd = endOfMonth(this.currentDate);
+    return date >= currentMonthStart && date <= currentMonthEnd;
   }
 
   // Enviar reserva
@@ -235,6 +346,12 @@ export class ReservationFormComponent implements OnInit {
         error: (error) => {
           console.error('Error creating reservation', error);
           this.isLoading = false;
+          this.showAlert({
+            title: 'Error en la Reserva',
+            message: 'No pudimos procesar tu reserva. Por favor, intenta de nuevo o contacta nuestro soporte.',
+            type: 'error',
+            confirmText: 'Reintentar'
+          });
         }
       });
   }
@@ -279,5 +396,30 @@ export class ReservationFormComponent implements OnInit {
         } 
       });
     }
+  }
+
+  // Métodos para el modal de alerta
+  private showAlert(data: Partial<AlertModalData>): void {
+    this.alertModalData = {
+      title: data.title || '',
+      message: data.message || '',
+      type: data.type || 'info',
+      confirmText: data.confirmText || 'Entendido',
+      cancelText: data.cancelText,
+      showCancel: data.showCancel || false
+    };
+    this.showAlertModal = true;
+  }
+
+  onAlertConfirmed(): void {
+    this.showAlertModal = false;
+  }
+
+  onAlertCancelled(): void {
+    this.showAlertModal = false;
+  }
+
+  onAlertClosed(): void {
+    this.showAlertModal = false;
   }
 }

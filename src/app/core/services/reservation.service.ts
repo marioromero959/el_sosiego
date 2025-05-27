@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError, tap, delay } from 'rxjs/operators';
 import { ReservationData, Room, DateAvailability, CalendarMonth } from '../models/reservation.model';
 import { environment } from '../../../environments/environment';
-import { addDays, startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths } from 'date-fns';
+import { addDays, startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, differenceInDays, isBefore, isAfter, isSameDay } from 'date-fns';
 
 @Injectable({
   providedIn: 'root'
@@ -56,15 +56,36 @@ export class ReservationService {
     }
   ];
 
+  // Simulamos algunas fechas específicas que están ocupadas
+  private bookedDates: Date[] = [
+    new Date(2025, 4, 28), // 28 de Mayo
+    new Date(2025, 4, 29), // 29 de Mayo
+    new Date(2025, 5, 15), // 15 de Junio
+    new Date(2025, 5, 16), // 16 de Junio
+    new Date(2025, 5, 17), // 17 de Junio
+  ];
+
   constructor(private http: HttpClient) { }
 
   // Simulación de disponibilidad por fechas
   private generateMockAvailability(startDate: Date, endDate: Date): DateAvailability[] {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
-    console.log("days", days);
+    console.log("Generated days:", days);
     
     return days.map(date => {
-      // Simulamos diferentes niveles de disponibilidad
+      // Verificar si la fecha está en las fechas reservadas
+      const isBooked = this.bookedDates.some(bookedDate => 
+        isSameDay(bookedDate, date)
+      );
+      
+      // No permitir reservas en el pasado
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
+      
+      const isPastDate = isBefore(date, today);
+      
+      // Simulamos disponibilidad variable
       const dayOfWeek = date.getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       const randomFactor = Math.random();
@@ -72,22 +93,15 @@ export class ReservationService {
       // Los fines de semana tienen menos disponibilidad
       let availableRooms = isWeekend ? Math.floor(randomFactor * 2) + 1 : Math.floor(randomFactor * 3) + 1;
       
-      // Simulamos algunos días completamente ocupados
-      if (randomFactor < 0.1) {
-        availableRooms = 0;
-      }
-      
-      // No permitir reservas en el pasado
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const isAvailable = date >= today && availableRooms > 0;
+      // Si está reservado o es fecha pasada, no hay disponibilidad
+      const isAvailable = !isBooked && !isPastDate && availableRooms > 0;
       
       return {
-        date: date,
+        date: new Date(date), // Crear nueva instancia para evitar referencias
         available: isAvailable,
         availableRooms: isAvailable ? availableRooms : 0,
-        minPrice: this.PRICE_PER_NIGHT, // Precio fijo
-        maxPrice: this.PRICE_PER_NIGHT  // Precio fijo
+        minPrice: this.PRICE_PER_NIGHT,
+        maxPrice: this.PRICE_PER_NIGHT
       };
     });
   }
@@ -107,6 +121,7 @@ export class ReservationService {
       days: availability
     };
     
+    console.log("Month availability generated:", calendarMonth);
     return of(calendarMonth).pipe(delay(500));
   }
 
@@ -122,13 +137,29 @@ export class ReservationService {
   checkDateRangeAvailability(checkIn: Date, checkOut: Date, guests: number): Observable<{available: boolean, totalPrice: number}> {
     // En un entorno real: return this.http.post<any>(`${this.apiUrl}/check-availability`, { checkIn, checkOut, guests });
     
-    const availability = this.generateMockAvailability(checkIn, checkOut);
-    console.log("availability", availability);
-    const allDaysAvailable = availability.every(day => day.available && day.availableRooms >= Math.ceil(guests / 2));
+    console.log("Checking availability from", checkIn, "to", checkOut, "for", guests, "guests");
     
-    // Calcular precio total basado en las noches (sin incluir el día de checkout)
-    const nights = availability.length; // No contar el día de checkout
+    // Generar disponibilidad para el rango incluyendo la fecha de checkout para la verificación
+    const availability = this.generateMockAvailability(checkIn, checkOut);
+    console.log("Generated availability:", availability);
+    
+    // Verificar disponibilidad solo para las fechas de estadía (sin incluir checkout)
+    // El checkout no necesita estar disponible ya que el huésped se va ese día
+    const stayDates = availability.slice(0, -1); // Remover el último día (checkout)
+    console.log("Stay dates to check:", stayDates);
+    
+    // Verificar que todas las fechas de estadía estén disponibles
+    const allDaysAvailable = stayDates.every(day => {
+      const dayAvailable = day.available && day.availableRooms >= Math.ceil(guests / 2);
+      console.log(`Day ${day.date.toDateString()}: available=${day.available}, rooms=${day.availableRooms}, needed=${Math.ceil(guests / 2)}, result=${dayAvailable}`);
+      return dayAvailable;
+    });
+    
+    // Calcular precio total basado en las noches de estadía
+    const nights = differenceInDays(checkOut, checkIn);
     const totalPrice = allDaysAvailable ? (nights * this.PRICE_PER_NIGHT) : 0;
+    
+    console.log(`Availability check result: available=${allDaysAvailable}, nights=${nights}, totalPrice=${totalPrice}`);
     
     return of({
       available: allDaysAvailable,
@@ -146,6 +177,15 @@ export class ReservationService {
       createdAt: new Date()
     };
     
+    // Simular agregar las fechas a las reservadas
+    if (reservation.checkIn && reservation.checkOut) {
+      const reservedDates = eachDayOfInterval({ 
+        start: reservation.checkIn, 
+        end: addDays(reservation.checkOut, -1) // No incluir el día de checkout
+      });
+      this.bookedDates.push(...reservedDates);
+    }
+    
     return of(newReservation).pipe(delay(1200));
   }
 
@@ -162,5 +202,22 @@ export class ReservationService {
   getRoom(id: number): Observable<Room> {
     const room = this.mockRooms.find(r => r.id === id);
     return of(room as Room).pipe(delay(500));
+  }
+
+  // Método auxiliar para verificar si una fecha específica está disponible
+  isDateAvailable(date: Date): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (isBefore(date, today)) {
+      return false;
+    }
+    
+    return !this.bookedDates.some(bookedDate => isSameDay(bookedDate, date));
+  }
+
+  // Método para obtener las fechas ocupadas (útil para debugging)
+  getBookedDates(): Date[] {
+    return [...this.bookedDates];
   }
 }

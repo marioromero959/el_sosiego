@@ -67,7 +67,7 @@
                 <strong>Salida:</strong> {{formatDate(selectedCheckOut)}}
               </div>
               <div class="col-md-4" *ngIf="selectedCheckOut && availabilityResult">
-                <strong>{{calculateNights()}} noches - Total: ${{availabilityResult.totalPrice}} USD</strong>
+                <strong>{{calculateNights()}} noche(s) - Total: ${{availabilityResult.totalPrice}} USD</strong>
               </div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary mt-2" (click)="resetDateSelection()">
@@ -117,7 +117,6 @@
                  [class.in-range]="isDateInRange(dayAvailability.date)"
                  (click)="selectDate(dayAvailability)">
               <span class="day-number">{{dayAvailability.date.getDate()}}</span>
-              <!-- Quitamos el precio del calendario -->
               <span *ngIf="!dayAvailability.available" class="day-unavailable">N/D</span>
             </div>
           </div>
@@ -306,4 +305,13 @@
       </div>
     </div>
   </form>
+
+  <!-- Modal de Alerta -->
+  <app-alert-modal 
+    [show]="showAlertModal"
+    [data]="alertModalData"
+    (confirmed)="onAlertConfirmed()"
+    (cancelled)="onAlertCancelled()"
+    (closed)="onAlertClosed()">
+  </app-alert-modal>
 </div>
