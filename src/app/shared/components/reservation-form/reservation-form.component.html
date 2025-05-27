@@ -1,30 +1,11 @@
 <div class="reservation-form">
-  <form [formGroup]="reservationForm">
+  <form [formGroup]="reservationForm" *ngIf="reservationForm">
     <!-- Formulario simplificado para la página de inicio -->
-    <div *ngIf="simplified" class="row g-3">
-      <div class="col-md-4">
-        <div class="form-floating">
-          <input type="date" class="form-control" id="checkIn" formControlName="checkIn" [min]="minCheckInDate">
-          <label for="checkIn">Fecha de llegada</label>
-        </div>
-        <div *ngIf="fc['checkIn'].touched && fc['checkIn'].invalid" class="form-error">
-          <small class="text-danger">La fecha de llegada es obligatoria</small>
-        </div>
-      </div>
-      
-      <div class="col-md-4">
-        <div class="form-floating">
-          <input type="date" class="form-control" id="checkOut" formControlName="checkOut" [min]="minCheckOutDate">
-          <label for="checkOut">Fecha de salida</label>
-        </div>
-        <div *ngIf="fc['checkOut'].touched && fc['checkOut'].invalid" class="form-error">
-          <small class="text-danger">La fecha de salida es obligatoria</small>
-        </div>
-      </div>
-      
-      <div class="col-md-3">
-        <div class="form-floating">
-          <select class="form-select" id="guests" formControlName="guests">
+    <div *ngIf="simplified" class="simplified-form">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">¿Cuántos huéspedes?</label>
+          <select class="form-select" formControlName="guests">
             <option [value]="1">1 persona</option>
             <option [value]="2">2 personas</option>
             <option [value]="3">3 personas</option>
@@ -34,190 +15,191 @@
             <option [value]="7">7 personas</option>
             <option [value]="8">8 personas</option>
           </select>
-          <label for="guests">Huéspedes</label>
         </div>
-      </div>
-      
-      <div class="col-md-2">
-        <button type="button" class="btn btn-primary w-100 h-100" 
-                (click)="searchAvailability()" 
-                [disabled]="isLoading || reservationForm.invalid">
-          <span *ngIf="!isLoading">Buscar</span>
-          <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        </button>
+        
+        <div class="col-md-6">
+          <button type="button" class="btn btn-primary w-100" (click)="searchAvailability()">
+            Ver Disponibilidad
+          </button>
+        </div>
       </div>
     </div>
-
+    
     <!-- Formulario completo para la página de reserva -->
     <div *ngIf="!simplified">
-      <!-- Step 1: Fechas y huéspedes -->
-      <div *ngIf="!showResults && !isSubmitted" class="reservation-step">
-        <h4 class="mb-4">Información de la estancia</h4>
+      <!-- Step 1: Selección de huéspedes y calendario -->
+      <div *ngIf="!showBookingForm && !isSubmitted" class="reservation-step">
+        <h4 class="mb-4">Selecciona tus fechas</h4>
         
-        <div class="row g-3 mb-4">
+        <!-- Precio información -->
+        <div class="price-info alert alert-light mb-4">
+          <div class="text-center">
+            <h5 class="mb-2">Precio por noche: <span class="text-primary">${{pricePerNight}} USD</span></h5>
+            <small class="text-muted">Todos los precios están en dólares estadounidenses</small>
+          </div>
+        </div>
+        
+        <!-- Selector de huéspedes -->
+        <div class="row mb-4">
           <div class="col-md-4">
-            <div class="form-floating">
-              <input type="date" class="form-control" id="checkInFull" formControlName="checkIn" [min]="minCheckInDate">
-              <label for="checkInFull">Fecha de llegada</label>
+            <label class="form-label">Número de huéspedes</label>
+            <select class="form-select" formControlName="guests" (change)="resetDateSelection()">
+              <option [value]="1">1 persona</option>
+              <option [value]="2">2 personas</option>
+              <option [value]="3">3 personas</option>
+              <option [value]="4">4 personas</option>
+              <option [value]="5">5 personas</option>
+              <option [value]="6">6 personas</option>
+              <option [value]="7">7 personas</option>
+              <option [value]="8">8 personas</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Fechas seleccionadas -->
+        <div *ngIf="selectedCheckIn" class="selected-dates-info mb-4">
+          <div class="alert alert-info">
+            <div class="row">
+              <div class="col-md-4">
+                <strong>Llegada:</strong> {{formatDate(selectedCheckIn)}}
+              </div>
+              <div class="col-md-4" *ngIf="selectedCheckOut">
+                <strong>Salida:</strong> {{formatDate(selectedCheckOut)}}
+              </div>
+              <div class="col-md-4" *ngIf="selectedCheckOut && availabilityResult">
+                <strong>{{calculateNights()}} noches - Total: ${{availabilityResult.totalPrice}} USD</strong>
+              </div>
             </div>
-            <div *ngIf="fc['checkIn'].touched && fc['checkIn'].invalid" class="form-error">
-              <small class="text-danger">La fecha de llegada es obligatoria</small>
-            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" (click)="resetDateSelection()">
+              Cambiar fechas
+            </button>
+          </div>
+        </div>
+        
+        <!-- Calendario -->
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="navigateMonth(-1)">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <h5 class="mb-0">{{getMonthName()}}</h5>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="navigateMonth(1)">
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
           
-          <div class="col-md-4">
-            <div class="form-floating">
-              <input type="date" class="form-control" id="checkOutFull" formControlName="checkOut" [min]="minCheckOutDate">
-              <label for="checkOutFull">Fecha de salida</label>
+          <!-- Loading del calendario -->
+          <div *ngIf="calendarLoading" class="calendar-loading text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
             </div>
-            <div *ngIf="fc['checkOut'].touched && fc['checkOut'].invalid" class="form-error">
-              <small class="text-danger">La fecha de salida es obligatoria</small>
-            </div>
+            <p class="mt-2">Cargando disponibilidad...</p>
           </div>
           
-          <div class="col-md-4">
-            <div class="form-floating">
-              <select class="form-select" id="guestsFull" formControlName="guests">
-                <option [value]="1">1 persona</option>
-                <option [value]="2">2 personas</option>
-                <option [value]="3">3 personas</option>
-                <option [value]="4">4 personas</option>
-                <option [value]="5">5 personas</option>
-                <option [value]="6">6 personas</option>
-                <option [value]="7">7 personas</option>
-                <option [value]="8">8 personas</option>
-              </select>
-              <label for="guestsFull">Huéspedes</label>
+          <!-- Días de la semana -->
+          <div *ngIf="!calendarLoading" class="calendar-weekdays">
+            <div class="weekday">Lun</div>
+            <div class="weekday">Mar</div>
+            <div class="weekday">Mié</div>
+            <div class="weekday">Jue</div>
+            <div class="weekday">Vie</div>
+            <div class="weekday">Sáb</div>
+            <div class="weekday">Dom</div>
+          </div>
+          
+          <!-- Días del mes -->
+          <div *ngIf="!calendarLoading" class="calendar-days">
+            <div *ngFor="let dayAvailability of getDaysInMonth()" 
+                 class="calendar-day" 
+                 [class.available]="dayAvailability.available"
+                 [class.unavailable]="!dayAvailability.available"
+                 [class.selected]="isDateSelected(dayAvailability.date)"
+                 [class.in-range]="isDateInRange(dayAvailability.date)"
+                 (click)="selectDate(dayAvailability)">
+              <span class="day-number">{{dayAvailability.date.getDate()}}</span>
+              <!-- Quitamos el precio del calendario -->
+              <span *ngIf="!dayAvailability.available" class="day-unavailable">N/D</span>
             </div>
           </div>
         </div>
         
-        <div class="d-flex justify-content-end">
-          <button type="button" class="btn btn-primary" 
-                  (click)="searchAvailability()" 
+        <!-- Leyenda -->
+        <div class="calendar-legend mt-3">
+          <div class="legend-item">
+            <div class="legend-color available"></div>
+            <span>Disponible</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color unavailable"></div>
+            <span>No disponible</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color selected"></div>
+            <span>Seleccionado</span>
+          </div>
+        </div>
+        
+        <!-- Botón Siguiente -->
+        <div class="text-center mt-4" *ngIf="canProceedToBooking()">
+          <button type="button" class="btn btn-primary btn-lg px-5" 
+                  (click)="proceedToBooking()" 
                   [disabled]="isLoading">
-            <span *ngIf="!isLoading">Buscar disponibilidad</span>
-            <div>
-              {{
-                reservationForm.value | json
-              }}
-            </div>
-
+            <span *ngIf="!isLoading">Siguiente</span>
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            <span *ngIf="isLoading">Buscando...</span>
+            <span *ngIf="isLoading">Verificando...</span>
           </button>
+        </div>
+        
+        <!-- Instrucciones -->
+        <div class="calendar-instructions mt-3 text-center">
+          <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Selecciona tu fecha de llegada y luego tu fecha de salida
+          </small>
         </div>
       </div>
       
-      <!-- Step 2: Resultados y selección de habitación -->
-      <div *ngIf="showResults && !isSubmitted" class="reservation-step">
+      <!-- Step 2: Información personal -->
+      <div *ngIf="showBookingForm && !isSubmitted" class="reservation-step">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4>Habitaciones disponibles</h4>
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToForm()">
-            <i class="fas fa-arrow-left me-2"></i> Modificar búsqueda
+          <h4>Completa tu reserva</h4>
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showBookingForm = false">
+            <i class="fas fa-arrow-left me-2"></i> Cambiar fechas
           </button>
         </div>
         
-        <div class="alert alert-info mb-4">
-          <strong>Estancia:</strong> {{formatDate(reservationForm.value.checkIn)}} - {{formatDate(reservationForm.value.checkOut)}} 
-          ({{calculateNights()}} noches) · {{reservationForm.value.guests}} {{reservationForm.value.guests == 1 ? 'huésped' : 'huéspedes'}}
-        </div>
-        
-        <div *ngIf="availableRooms.length === 0" class="alert alert-warning">
-          No hay habitaciones disponibles para las fechas seleccionadas. Por favor, intenta con otras fechas.
-        </div>
-        
-        <div *ngFor="let room of availableRooms" class="card room-result-card mb-4" 
-             [class.selected]="reservationForm.value.roomType === room.type">
-          <div class="row g-0">
-            <div class="col-md-4">
-              <div class="room-img-container">
-                <img [src]="room.images[0]" [alt]="room.name" class="img-fluid rounded-start h-100">
-              </div>
+        <!-- Resumen de la reserva -->
+        <div class="booking-summary alert alert-light mb-4">
+          <div class="row">
+            <div class="col-md-3">
+              <strong>Llegada</strong><br>
+              {{selectedCheckIn ? formatDate(selectedCheckIn) : ''}}
             </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                  <h5 class="card-title">{{room.name}}</h5>
-                  <span class="badge bg-primary">{{room.capacity}} personas max.</span>
-                </div>
-                
-                <p class="card-text">{{room.description}}</p>
-                
-                <div class="room-features mb-3">
-                  <span><i class="fas fa-ruler-combined"></i> {{room.size}} m²</span>
-                  <span><i class="fas fa-bed"></i> {{room.beds}}</span>
-                </div>
-                
-                <div class="room-amenities mb-3">
-                  <span *ngFor="let amenity of room.amenities" class="badge bg-light text-dark me-2 mb-2">{{amenity}}</span>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                  <div class="price-info">
-                    <span class="room-price">{{room.pricePerNight}}€</span> / noche
-                    <div class="total-price">
-                      Total: <strong>{{calculateTotalPrice(room)}}€</strong> ({{calculateNights()}} noches)
-                    </div>
-                  </div>
-                  
-                  <button type="button" class="btn" 
-                          [class.btn-success]="reservationForm.value.roomType === room.type"
-                          [class.btn-primary]="reservationForm.value.roomType !== room.type"
-                          (click)="selectRoom(room)">
-                    <span *ngIf="reservationForm.value.roomType !== room.type">Seleccionar</span>
-                    <span *ngIf="reservationForm.value.roomType === room.type"><i class="fas fa-check me-2"></i>Seleccionada</span>
-                  </button>
-                </div>
-              </div>
+            <div class="col-md-3">
+              <strong>Salida</strong><br>
+              {{selectedCheckOut ? formatDate(selectedCheckOut) : ''}}
+            </div>
+            <div class="col-md-3">
+              <strong>Huéspedes</strong><br>
+              {{reservationForm.value.guests}} persona(s)
+            </div>
+            <div class="col-md-3">
+              <strong>Total</strong><br>
+              <span class="text-primary fs-5">${{availabilityResult?.totalPrice}} USD</span>
             </div>
           </div>
         </div>
         
-        <div *ngIf="availableRooms.length > 0" class="d-flex justify-content-between align-items-center mt-4">
-          <button type="button" class="btn btn-outline-secondary" (click)="backToForm()">
-            <i class="fas fa-arrow-left me-2"></i> Atrás
-          </button>
-          
-          <button type="button" class="btn btn-primary" 
-                  [disabled]="!reservationForm.value.roomType"
-                  (click)="reservationForm.value.roomType ? (showResults = false) : null">
-            Continuar con los datos personales
-          </button>
-        </div>
-      </div>
-      
-      <!-- Step 3: Información personal -->
-      <div *ngIf="!showResults && reservationForm.value.roomType && !isSubmitted" class="reservation-step">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4>Datos de contacto</h4>
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showResults = true">
-            <i class="fas fa-arrow-left me-2"></i> Volver a la selección
-          </button>
-        </div>
-        
-        <div class="selected-room-summary alert alert-success mb-4">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <strong>Habitación seleccionada:</strong> 
-              {{getSelectedRoomName()}}
-            </div>
-            <div>
-              <strong>Total:</strong> 
-              {{getSelectedRoomPrice()}}€
-            </div>
-          </div>
-        </div>
-        
+        <!-- Formulario de datos personales -->
         <div class="row g-3 mb-4">
           <div class="col-md-6">
             <div class="form-floating">
               <input type="text" class="form-control" id="name" formControlName="name">
               <label for="name">Nombre completo</label>
             </div>
-            <div *ngIf="fc['name'].touched && fc['name'].invalid" class="form-error">
-              <small *ngIf="fc['name'].errors?.['required']" class="text-danger">El nombre es obligatorio</small>
-              <small *ngIf="fc['name'].errors?.['minlength']" class="text-danger">El nombre debe tener al menos 3 caracteres</small>
+            <div *ngIf="fc['name']?.touched && fc['name']?.invalid" class="form-error">
+              <small *ngIf="fc['name']?.errors?.['required']" class="text-danger">El nombre es obligatorio</small>
+              <small *ngIf="fc['name']?.errors?.['minlength']" class="text-danger">El nombre debe tener al menos 3 caracteres</small>
             </div>
           </div>
           
@@ -226,9 +208,9 @@
               <input type="email" class="form-control" id="email" formControlName="email">
               <label for="email">Correo electrónico</label>
             </div>
-            <div *ngIf="fc['email'].touched && fc['email'].invalid" class="form-error">
-              <small *ngIf="fc['email'].errors?.['required']" class="text-danger">El correo electrónico es obligatorio</small>
-              <small *ngIf="fc['email'].errors?.['email']" class="text-danger">Introduce un correo electrónico válido</small>
+            <div *ngIf="fc['email']?.touched && fc['email']?.invalid" class="form-error">
+              <small *ngIf="fc['email']?.errors?.['required']" class="text-danger">El correo electrónico es obligatorio</small>
+              <small *ngIf="fc['email']?.errors?.['email']" class="text-danger">Introduce un correo electrónico válido</small>
             </div>
           </div>
           
@@ -237,9 +219,9 @@
               <input type="tel" class="form-control" id="phone" formControlName="phone">
               <label for="phone">Teléfono</label>
             </div>
-            <div *ngIf="fc['phone'].touched && fc['phone'].invalid" class="form-error">
-              <small *ngIf="fc['phone'].errors?.['required']" class="text-danger">El teléfono es obligatorio</small>
-              <small *ngIf="fc['phone'].errors?.['pattern']" class="text-danger">Introduce un número de teléfono válido</small>
+            <div *ngIf="fc['phone']?.touched && fc['phone']?.invalid" class="form-error">
+              <small *ngIf="fc['phone']?.errors?.['required']" class="text-danger">El teléfono es obligatorio</small>
+              <small *ngIf="fc['phone']?.errors?.['pattern']" class="text-danger">Introduce un número de teléfono válido</small>
             </div>
           </div>
           
@@ -259,21 +241,21 @@
         </div>
         
         <div class="d-flex justify-content-between align-items-center">
-          <button type="button" class="btn btn-outline-secondary" (click)="showResults = true">
+          <button type="button" class="btn btn-outline-secondary" (click)="showBookingForm = false">
             <i class="fas fa-arrow-left me-2"></i> Atrás
           </button>
           
           <button type="button" class="btn btn-success btn-lg" 
                   (click)="submitReservation()" 
                   [disabled]="isLoading || reservationForm.invalid">
-            <span *ngIf="!isLoading">Completar reserva</span>
+            <span *ngIf="!isLoading">Confirmar reserva - ${{availabilityResult?.totalPrice}} USD</span>
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             <span *ngIf="isLoading">Procesando...</span>
           </button>
         </div>
       </div>
       
-      <!-- Step 4: Confirmación -->
+      <!-- Step 3: Confirmación -->
       <div *ngIf="isSubmitted" class="reservation-step text-center">
         <div class="reservation-confirmation">
           <div class="confirmation-icon">
@@ -288,17 +270,15 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="detail-item">
-                  <span class="detail-label">Fechas</span>
-                  <span class="detail-value">{{formatDate(reservationForm.value.checkIn)}} - {{formatDate(reservationForm.value.checkOut)}}</span>
+                  <span class="detail-label">Llegada</span>
+                  <span class="detail-value">{{selectedCheckIn ? formatDate(selectedCheckIn) : ''}}</span>
                 </div>
               </div>
               
               <div class="col-md-6">
                 <div class="detail-item">
-                  <span class="detail-label">Habitación</span>
-                  <span class="detail-value">
-                    {{getSelectedRoomName()}}
-                  </span>
+                  <span class="detail-label">Salida</span>
+                  <span class="detail-value">{{selectedCheckOut ? formatDate(selectedCheckOut) : ''}}</span>
                 </div>
               </div>
               
@@ -312,9 +292,7 @@
               <div class="col-md-6">
                 <div class="detail-item">
                   <span class="detail-label">Total</span>
-                  <span class="detail-value">
-                    {{getSelectedRoomPrice()}}€
-                  </span>
+                  <span class="detail-value">${{availabilityResult?.totalPrice}} USD</span>
                 </div>
               </div>
             </div>

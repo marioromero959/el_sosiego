@@ -2,14 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError, tap, delay } from 'rxjs/operators';
-import { ReservationData, Room, Availability } from '../models/reservation.model';
+import { ReservationData, Room, DateAvailability, CalendarMonth } from '../models/reservation.model';
 import { environment } from '../../../environments/environment';
+import { addDays, startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths } from 'date-fns';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReservationService {
   private apiUrl = environment.apiUrl;
+  private readonly PRICE_PER_NIGHT = 200; // Precio fijo en USD por noche
   
   // Mock data for development
   private mockRooms: Room[] = [
@@ -19,81 +21,124 @@ export class ReservationService {
       type: 'standard',
       description: 'Acogedora habitación con todas las comodidades para una estancia agradable.',
       capacity: 2,
-      pricePerNight: 80,
-      size: 35,
-      beds: '2 Camas',
-      amenities: ['Wi-Fi', 'Baño compartido', 'Vista al jardín'],
-      images: ['assets/images/gallery/img83.jpeg', 'assets/images/gallery/img84.jpeg', 'assets/images/gallery/img89.jpeg', 'assets/images/gallery/img90.jpeg', 'assets/images/gallery/img91.jpeg'],
+      pricePerNight: this.PRICE_PER_NIGHT,
+      size: 25,
+      beds: '1 Cama King',
+      amenities: ['TV', 'Wi-Fi', 'Baño privado', 'Vista al jardín'],
+      images: ['assets/images/room1.jpg', 'assets/images/room1-2.jpg'],
       available: true
     },
     {
       id: 2,
       name: 'Habitación Superior',
       type: 'superior',
-      description: 'Agradable habitación con todas las comodidades para sentirse como en casa.',
+      description: 'Espaciosa habitación con vistas impresionantes y detalles de lujo.',
       capacity: 2,
-      pricePerNight: 120,
+      pricePerNight: this.PRICE_PER_NIGHT,
       size: 35,
-      beds: '2 Camas',
-      amenities: ['Wi-Fi', 'Baño compartido', 'Vista al jardín'],
-      images: ['assets/images/gallery/img85.jpeg', 'assets/images/gallery/img86.jpeg', 'assets/images/gallery/img87.jpeg', 'assets/images/gallery/img88.jpeg'],
+      beds: '1 Cama King',
+      amenities: ['TV', 'Wi-Fi', 'Baño privado', 'Minibar', 'Vista a la montaña'],
+      images: ['assets/images/room2.jpg', 'assets/images/room2-2.jpg'],
       available: true
     },
     {
       id: 3,
-      name: 'Suite Matrimonial',
+      name: 'Suite Familiar',
       type: 'family',
       description: 'Perfecta para familias, con amplios espacios y todas las comodidades.',
-      capacity: 2,
-      pricePerNight: 180,
+      capacity: 4,
+      pricePerNight: this.PRICE_PER_NIGHT,
       size: 50,
-      beds: '1 Cama King',
-      amenities: ['Wi-Fi', 'Baño privado', 'Sala de estar'],
-      images: ['assets/images/gallery/img98.jpeg', 'assets/images/gallery/img99.jpeg', 'assets/images/gallery/img100.jpeg'],
-      available: true
-    },
-    {
-      id: 4,
-      name: 'Oficina',
-      type: 'oficina',
-      description: 'Ambiente profesional y confortable, ideal para enfocarte en tus proyectos.',
-      capacity: 1,
-      pricePerNight: 180,
-      size: 50,
-      beds: '1 Cama',
-      amenities: ['Wi-Fi', 'Escritorio', 'Silla de oficina'],
-      images: ['assets/images/gallery/img64.jpeg','assets/images/gallery/img65.jpeg','assets/images/gallery/img66.jpeg','assets/images/gallery/img67.jpeg'],
+      beds: '1 Cama King + 2 Camas Individuales',
+      amenities: ['TV', 'Wi-Fi', 'Baño privado', 'Sala de estar', 'Terraza privada', 'Vista panorámica'],
+      images: ['assets/images/room3.jpg', 'assets/images/room3-2.jpg'],
       available: true
     }
   ];
 
   constructor(private http: HttpClient) { }
 
-  // En un entorno real, esto se conectaría a un backend
-  getRooms(): Observable<Room[]> {
-    // return this.http.get<Room[]>(`${this.apiUrl}/rooms`);
-    return of(this.mockRooms).pipe(delay(800)); // Simular latencia
-  }
-
-  getRoom(id: number): Observable<Room> {
-    // return this.http.get<Room>(`${this.apiUrl}/rooms/${id}`);
-    const room = this.mockRooms.find(r => r.id === id);
-    return of(room as Room).pipe(delay(500)); // Simular latencia
-  }
-
-  checkAvailability(checkIn: Date, checkOut: Date, guests: number): Observable<Room[]> {
-    // En un entorno real, aquí consultaríamos la disponibilidad real
-    // return this.http.post<Room[]>(`${this.apiUrl}/availability`, { checkIn, checkOut, guests });
+  // Simulación de disponibilidad por fechas
+  private generateMockAvailability(startDate: Date, endDate: Date): DateAvailability[] {
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    console.log("days", days);
     
-    // Simulamos disponibilidad para desarrollo
-    const availableRooms = this.mockRooms.filter(room => room.capacity >= guests);
-    return of(availableRooms).pipe(delay(1000)); // Simular latencia
+    return days.map(date => {
+      // Simulamos diferentes niveles de disponibilidad
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const randomFactor = Math.random();
+      
+      // Los fines de semana tienen menos disponibilidad
+      let availableRooms = isWeekend ? Math.floor(randomFactor * 2) + 1 : Math.floor(randomFactor * 3) + 1;
+      
+      // Simulamos algunos días completamente ocupados
+      if (randomFactor < 0.1) {
+        availableRooms = 0;
+      }
+      
+      // No permitir reservas en el pasado
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isAvailable = date >= today && availableRooms > 0;
+      
+      return {
+        date: date,
+        available: isAvailable,
+        availableRooms: isAvailable ? availableRooms : 0,
+        minPrice: this.PRICE_PER_NIGHT, // Precio fijo
+        maxPrice: this.PRICE_PER_NIGHT  // Precio fijo
+      };
+    });
+  }
+
+  // Obtener disponibilidad para un mes específico
+  getMonthAvailability(year: number, month: number): Observable<CalendarMonth> {
+    // En un entorno real: return this.http.get<CalendarMonth>(`${this.apiUrl}/availability/${year}/${month}`);
+    
+    const monthStart = startOfMonth(new Date(year, month - 1));
+    const monthEnd = endOfMonth(new Date(year, month - 1));
+    
+    const availability = this.generateMockAvailability(monthStart, monthEnd);
+    
+    const calendarMonth: CalendarMonth = {
+      year: year,
+      month: month,
+      days: availability
+    };
+    
+    return of(calendarMonth).pipe(delay(500));
+  }
+
+  // Obtener disponibilidad para un rango de fechas
+  getDateRangeAvailability(startDate: Date, endDate: Date): Observable<DateAvailability[]> {
+    // En un entorno real: return this.http.post<DateAvailability[]>(`${this.apiUrl}/availability/range`, { startDate, endDate });
+    
+    const availability = this.generateMockAvailability(startDate, endDate);
+    return of(availability).pipe(delay(800));
+  }
+
+  // Verificar si un rango de fechas está disponible
+  checkDateRangeAvailability(checkIn: Date, checkOut: Date, guests: number): Observable<{available: boolean, totalPrice: number}> {
+    // En un entorno real: return this.http.post<any>(`${this.apiUrl}/check-availability`, { checkIn, checkOut, guests });
+    
+    const availability = this.generateMockAvailability(checkIn, checkOut);
+    console.log("availability", availability);
+    const allDaysAvailable = availability.every(day => day.available && day.availableRooms >= Math.ceil(guests / 2));
+    
+    // Calcular precio total basado en las noches (sin incluir el día de checkout)
+    const nights = availability.length; // No contar el día de checkout
+    const totalPrice = allDaysAvailable ? (nights * this.PRICE_PER_NIGHT) : 0;
+    
+    return of({
+      available: allDaysAvailable,
+      totalPrice: totalPrice
+    }).pipe(delay(600));
   }
 
   createReservation(reservation: ReservationData): Observable<ReservationData> {
     // En un entorno real: return this.http.post<ReservationData>(`${this.apiUrl}/reservations`, reservation);
     
-    // Simulamos la creación de una reserva
     const newReservation: ReservationData = {
       ...reservation,
       id: Math.floor(Math.random() * 1000) + 1,
@@ -101,28 +146,21 @@ export class ReservationService {
       createdAt: new Date()
     };
     
-    return of(newReservation).pipe(delay(1200)); // Simular latencia
+    return of(newReservation).pipe(delay(1200));
   }
 
-  // Ya no necesitamos este método custom delay porque usamos el operador delay de RxJS
-  /* 
-  private delay(ms: number) {
-    return (observable: Observable<any>) => 
-      new Observable(observer => {
-        const subscription = observable.subscribe({
-          next: value => {
-            setTimeout(() => observer.next(value), ms);
-          },
-          error: error => {
-            setTimeout(() => observer.error(error), ms);
-          },
-          complete: () => {
-            setTimeout(() => observer.complete(), ms);
-          }
-        });
-        
-        return () => subscription.unsubscribe();
-      });
+  // Obtener precio por noche
+  getPricePerNight(): number {
+    return this.PRICE_PER_NIGHT;
   }
-  */
+
+  // Mantener métodos anteriores para compatibilidad
+  getRooms(): Observable<Room[]> {
+    return of(this.mockRooms).pipe(delay(800));
+  }
+
+  getRoom(id: number): Observable<Room> {
+    const room = this.mockRooms.find(r => r.id === id);
+    return of(room as Room).pipe(delay(500));
+  }
 }

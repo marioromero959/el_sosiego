@@ -3,7 +3,6 @@ export interface ReservationData {
   checkIn: Date;
   checkOut: Date;
   guests: number;
-  roomType: string;
   name: string;
   email: string;
   phone: string;
@@ -27,7 +26,16 @@ export interface Room {
   available: boolean;
 }
 
-export interface Availability {
+export interface DateAvailability {
   date: Date;
-  availableRooms: number[];
+  available: boolean;
+  availableRooms: number;
+  minPrice: number;
+  maxPrice: number;
+}
+
+export interface CalendarMonth {
+  year: number;
+  month: number;
+  days: DateAvailability[];
 }
