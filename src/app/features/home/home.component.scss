@@ -216,15 +216,17 @@
     align-items: center;
     
     .testimonial-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
+      font-weight: bold;
+      font-size: 1.2rem;
       margin-right: 15px;
-      border: 3px solid var(--primary-color);
     }
     
     .testimonial-info {

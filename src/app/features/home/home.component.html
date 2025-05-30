@@ -142,27 +142,40 @@
       <p class="section-subtitle">Experiencias compartidas por quienes han disfrutado de nuestra casa</p>
     </div>
     
-    <div class="row g-4">
-      <ng-container *ngFor="let testimonial of testimonials">
-        <div class="col-md-4">
-          <div class="testimonial-card">
-            <div class="testimonial-rating">
-              <ng-container *ngFor="let i of [1,2,3,4,5]">
-                <i class="fas fa-star" [class.text-warning]="i <= testimonial.rating" [class.text-muted]="i > testimonial.rating"></i>
-              </ng-container>
+    <!-- Loading Indicator -->
+    <div *ngIf="isLoadingReviews" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3">Cargando testimonios...</p>
+    </div>
+
+    <!-- Reviews Grid -->
+    <div class="row g-4" *ngIf="!isLoadingReviews">
+      <div *ngFor="let review of reviews" class="col-md-4">
+        <div class="testimonial-card">
+          <div class="testimonial-rating">
+            <ng-container *ngFor="let i of [1,2,3,4,5]">
+              <i class="fas fa-star" [class.text-warning]="i <= review.rating" [class.text-muted]="i > review.rating"></i>
+            </ng-container>
+          </div>
+          <p class="testimonial-text">"{{review.text}}"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">
+              {{getInitial(review.name)}}
             </div>
-            <p class="testimonial-text">"{{testimonial.text}}"</p>
-            <div class="testimonial-author">
-              <!-- <img [src]="testimonial.photo" alt="{{testimonial.name}}" class="testimonial-avatar"> -->
-              <i class="testimonial-avatar" class="{{testimonial.photo}}"></i>
-              <div class="testimonial-info">
-                <h6>{{testimonial.name}}</h6>
-                <span>Huésped verificado</span>
-              </div>
+            <div class="testimonial-info">
+              <h6>{{review.name}}</h6>
+              <span>Huésped verificado</span>
             </div>
           </div>
         </div>
-      </ng-container>
+      </div>
+
+      <!-- Mensaje si no hay reviews -->
+      <div *ngIf="reviews.length === 0" class="col-12 text-center">
+        <p>Aún no hay testimonios disponibles.</p>
+      </div>
     </div>
   </div>
 </section>
