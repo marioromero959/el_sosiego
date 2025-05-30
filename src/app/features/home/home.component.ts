@@ -4,8 +4,10 @@ import { RouterLink } from '@angular/router';
 import { ReservationFormComponent } from '../../shared/components/reservation-form/reservation-form.component';
 import { ReservationService } from '../../core/services/reservation.service';
 import { ReviewService } from '../../core/services/review.service';
+import { ServiceService } from '../../core/services/service.service';
 import { Room } from '../../core/models/room.model';
 import { Review } from '../../core/models/review.model';
+import { Service } from '../../core/models/service.model';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
@@ -18,8 +20,10 @@ import { ApiService } from '../../core/services/api.service';
 export class HomeComponent implements OnInit {
   rooms: Room[] = [];
   reviews: Review[] = [];
+  services: Service[] = [];
   isLoading: boolean = true;
   isLoadingReviews: boolean = true;
+  isLoadingServices: boolean = true;
 
   amenities = [
     {
@@ -47,12 +51,14 @@ export class HomeComponent implements OnInit {
   constructor(
     private reservationService: ReservationService,
     private reviewService: ReviewService,
+    private serviceService: ServiceService,
     public apiService: ApiService
   ) {}
 
   ngOnInit(): void {
     this.loadRooms();
     this.loadReviews();
+    this.loadServices();
   }
 
   loadRooms(): void {
@@ -81,6 +87,21 @@ export class HomeComponent implements OnInit {
         error: (error) => {
           console.error('Error fetching reviews:', error);
           this.isLoadingReviews = false;
+        }
+      });
+  }
+
+  loadServices(): void {
+    this.isLoadingServices = true;
+    this.serviceService.getServices()
+      .subscribe({
+        next: (data) => {
+          this.services = data;
+          this.isLoadingServices = false;
+        },
+        error: (error) => {
+          console.error('Error fetching services:', error);
+          this.isLoadingServices = false;
         }
       });
   }
