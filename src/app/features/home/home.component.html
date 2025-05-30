@@ -66,86 +66,37 @@
       <p class="section-subtitle">Descubre nuestras cómodas y acogedoras opciones de hospedaje</p>
     </div>
     
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="card h-100 room-card">
-          <img src="assets/images/gallery/img89.jpeg" class="card-img-top" alt="Habitación Estándar">
-          <div class="card-body">
-            <h5 class="card-title">Habitación Estándar</h5>
-            <div class="room-features">
-              <span><i class="fas fa-user"></i> 2 Personas</span>
-              <span><i class="fas fa-bed"></i> 2 Camas</span>
-              <span><i class="fas fa-mountain"></i> Vista al Jardín</span>
-            </div>
-            <p class="card-text">Acogedora habitación con todas las comodidades para una estancia agradable.</p>
-            <div class="d-flex justify-content-between align-items-center">
-              <!-- <span class="room-price">Desde 80€/noche</span> -->
-              <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
-            </div>
-          </div>
-        </div>
+    <!-- Loading Indicator -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
       </div>
-      
-      <div class="col-md-4">
-        <div class="card h-100 room-card">
-          <img src="assets/images/gallery/img13.jpeg" class="card-img-top" alt="Habitación Superior">
-          <div class="card-body">
-            <h5 class="card-title">Habitación Superior</h5>
-            <div class="room-features">
-              <span><i class="fas fa-user"></i> 2 Personas</span>
-              <span><i class="fas fa-bed"></i> 2 Camas</span>
-              <span><i class="fas fa-mountain"></i> Vista al Jardín</span>
-            </div>
-            <p class="card-text">Agradable habitación con todas las comodidades para sentirse como en casa.</p>
-            <div class="d-flex justify-content-between align-items-center">
-              <!-- <span class="room-price">Desde 120€/noche</span> -->
-              <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-md-4">
-        <div class="card h-100 room-card">
-          <img src="assets/images/gallery/img98.jpeg" class="card-img-top" alt="Suite Familiar">
-          <div class="card-body">
-            <h5 class="card-title">Suite Matrimonial</h5>
-            <div class="room-features">
-              <span><i class="fas fa-user"></i> 2 Personas</span>
-              <span><i class="fas fa-bed"></i> 1 Cama</span>
-              <span><i class="fas fa-mountain"></i> Baño privado</span>
-            </div>
-            <p class="card-text">Perfecta para familias, con amplios espacios y todas las comodidades.</p>
-            <div class="d-flex justify-content-between align-items-center">
-              <!-- <span class="room-price">Desde 180€/noche</span> -->
-              <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="mt-3">Cargando habitaciones...</p>
     </div>
 
-    <div class="row g-4 mt-2">
-      <div class="col-md-4">
+    <!-- Rooms Grid -->
+    <div class="row g-4" *ngIf="!isLoading">
+      <div *ngFor="let room of rooms" class="col-md-4">
         <div class="card h-100 room-card">
-          <img src="assets/images/gallery/img64.jpeg" class="card-img-top" alt="Suite Familiar">
+          <img [src]="getFirstImageUrl(room)" class="card-img-top" [alt]="room.name">
           <div class="card-body">
-            <h5 class="card-title">Oficina</h5>
+            <h5 class="card-title">{{room.name}}</h5>
             <div class="room-features">
-              <span><i class="fas fa-user"></i> 1 Persona</span>
-              <span><i class="fas fa-bed"></i> 1 Cama</span>
-              <span><i class="fas fa-mountain"></i> Escritorio y wifi</span>
+              <span><i class="fas fa-user"></i> {{room.capacity}} Personas</span>
+              <span><i class="fas fa-bed"></i> {{room.beds}}</span>
+              <span *ngIf="room.amenities && room.amenities.length > 0">
+                <i class="fas fa-mountain"></i> {{room.amenities[0]}}
+              </span>
             </div>
-            <p class="card-text">Ambiente profesional y confortable, ideal para enfocarte en tus proyectos.</p>
+            <p class="card-text">{{room.description}}</p>
             <div class="d-flex justify-content-between align-items-center">
-              <!-- <span class="room-price">Desde 180€/noche</span> -->
+              <span class="room-price">Desde {{room.pricePerNight}}€/noche</span>
               <a routerLink="/alojamientos" class="btn btn-outline-primary">Ver detalles</a>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
     
     <div class="text-center mt-5">
       <a routerLink="/alojamientos" class="btn btn-primary btn-lg">Ver todas las opciones</a>

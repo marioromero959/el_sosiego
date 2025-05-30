@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReservationFormComponent } from '../../shared/components/reservation-form/reservation-form.component';
+import { ReservationService } from '../../core/services/reservation.service';
+import { Room } from '../../core/models/room.model';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-home',
@@ -10,7 +13,10 @@ import { ReservationFormComponent } from '../../shared/components/reservation-fo
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  rooms: Room[] = [];
+  isLoading: boolean = true;
+
   amenities = [
     {
       icon: 'fa-solid fa-wifi',
@@ -54,4 +60,35 @@ export class HomeComponent {
       rating: 4
     }
   ];
+
+  constructor(
+    private reservationService: ReservationService,
+    public apiService: ApiService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadRooms();
+  }
+
+  loadRooms(): void {
+    this.isLoading = true;
+    this.reservationService.getRooms()
+      .subscribe({
+        next: (data) => {
+          this.rooms = data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error fetching rooms:', error);
+          this.isLoading = false;
+        }
+      });
+  }
+
+  getFirstImageUrl(room: Room): string {
+    if (!room.images || room.images.length === 0) {
+      return 'assets/images/placeholder.jpg';
+    }
+    return this.apiService.getImageUrl(room.images[0].url);
+  }
 }
