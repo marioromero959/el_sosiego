@@ -13,144 +13,157 @@
 <!-- Gallery Section -->
 <section class="section gallery-section" tabindex="0" (keydown)="handleKeydown($event)">
   <div class="container">
-    <!-- Filter Buttons -->
-    <div class="gallery-filters text-center mb-5">
-      <div class="btn-group">
-        <button type="button" class="btn"
-                *ngFor="let category of categories"
-                [class.btn-primary]="selectedCategory === category.id"
-                [class.btn-outline-primary]="selectedCategory !== category.id"
-                (click)="filterItems(category.id)">
-          {{category.name}}
-        </button>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
       </div>
+      <p class="mt-3">Cargando galería...</p>
     </div>
-     
-    <!-- Gallery Grid -->
-    <div class="row g-4 gallery-container">
-      <div *ngFor="let item of filteredItems" class="col-lg-4 col-md-6 gallery-item" [attr.data-category]="item.category">
-        <div class="gallery-card" (click)="openLightbox(item)">
-          
-          <!-- Imagen principal (primera del array) -->
-          <img [src]="item.images[0].thumb" [alt]="item.title" class="img-fluid">
-          
-          <!-- Indicador de múltiples imágenes -->
-          <div class="image-count-badge" *ngIf="item.images.length > 1">
-            <i class="fas fa-images"></i>
-            <span>{{item.images.length}}</span>
-          </div>
-          
-          <div class="gallery-overlay">
-            <div class="gallery-info">
-              <h5>{{item.title}}</h5>
-              <p *ngIf="item.images.length > 1" class="image-count-text">
-                {{item.images.length}} imágenes
-              </p>
-              <p *ngIf="item.images.length === 1" class="image-count-text">
-                1 imagen
-              </p>
-              <div class="gallery-icon">
-                <i class="fas fa-search-plus"></i>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="alert alert-danger text-center" role="alert">
+      {{error}}
+    </div>
+
+    <!-- Gallery Content -->
+    <div *ngIf="!isLoading && !error">
+      <!-- Filter Buttons -->
+      <div class="gallery-filters text-center mb-5">
+        <div class="btn-group">
+          <button type="button" class="btn"
+                  *ngFor="let category of categories"
+                  [class.btn-primary]="selectedCategory === category.id"
+                  [class.btn-outline-primary]="selectedCategory !== category.id"
+                  (click)="filterItems(category.id)">
+            {{category.name}}
+          </button>
+        </div>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="row g-4 gallery-container">
+        <div *ngFor="let item of filteredItems" class="col-lg-4 col-md-6 gallery-item" [attr.data-category]="item.category">
+          <div class="gallery-card" (click)="openLightbox(item)">
+            <!-- Imagen principal (primera del array) -->
+            <img [src]="item.images[0].thumb" [alt]="item.title" class="img-fluid">
+            
+            <!-- Indicador de múltiples imágenes -->
+            <div class="image-count-badge" *ngIf="item.images.length > 1">
+              <i class="fas fa-images"></i>
+              <span>{{item.images.length}}</span>
+            </div>
+
+            <div class="gallery-overlay">
+              <div class="gallery-info">
+                <h5>{{item.title}}</h5>
+                <p *ngIf="item.images.length > 1" class="image-count-text">
+                  {{item.images.length}} imágenes
+                </p>
+                <p *ngIf="item.images.length === 1" class="image-count-text">
+                  1 imagen
+                </p>
+                <div class="gallery-icon">
+                  <i class="fas fa-search-plus"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-     
-    <!-- Empty State -->
-    <div *ngIf="filteredItems.length === 0" class="text-center py-5">
-      <div class="empty-state">
-        <i class="fas fa-image"></i>
-        <h4>No hay elementos en esta categoría</h4>
-        <p>Por favor, selecciona otra categoría para ver el contenido.</p>
-      </div>
-    </div>
-  </div>
-     
-  <!-- Lightbox Modal -->
-  <div class="lightbox" 
-       [class.active]="lightboxActive"
-       (click)="closeLightbox()"
-       *ngIf="lightboxActive && currentItem">
-    
-    <div class="lightbox-content" (click)="$event.stopPropagation()">
-      
-      <!-- Botón de cerrar mejorado -->
-      <button type="button" 
-              class="lightbox-close-btn" 
-              (click)="closeLightbox()"
-              title="Cerrar galería (ESC)"
-              aria-label="Cerrar galería">
-        <i class="fas fa-times"></i>
-      </button>
-      
-      <!-- Imagen principal -->
-      <div class="lightbox-img-container">
-        <img *ngIf="getCurrentImage()" 
-             [src]="getCurrentImage()!.src" 
-             [alt]="getCurrentImage()!.alt" 
-             class="lightbox-img">
-      </div>
-      
-      <!-- Información de la imagen -->
-      <div class="lightbox-info">
-        <div class="lightbox-caption">
-          <h5>{{currentItem.title}}</h5>
-          <p *ngIf="getCurrentImage()">{{getCurrentImage()!.alt}}</p>
-        </div>
-        
-        <!-- Contador de imágenes -->
-        <div class="lightbox-counter" *ngIf="getTotalImages() > 1">
-          {{currentImageIndex + 1}} / {{getTotalImages()}}
+
+      <!-- Empty State -->
+      <div *ngIf="filteredItems.length === 0" class="text-center py-5">
+        <div class="empty-state">
+          <i class="fas fa-image"></i>
+          <h4>No hay elementos en esta categoría</h4>
+          <p>Por favor, selecciona otra categoría para ver el contenido.</p>
         </div>
       </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox" 
+         [class.active]="lightboxActive"
+         (click)="closeLightbox()"
+         *ngIf="lightboxActive && currentItem">
       
-      <!-- Controles de navegación -->
-      <div *ngIf="getTotalImages() > 1" class="lightbox-navigation">
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <!-- Botón de cerrar mejorado -->
         <button type="button" 
-                class="lightbox-nav lightbox-prev" 
-                (click)="navigateLightbox(-1)"
-                title="Imagen anterior (←)"
-                aria-label="Imagen anterior">
-          <i class="fas fa-chevron-left"></i>
+                class="lightbox-close-btn" 
+                (click)="closeLightbox()"
+                title="Cerrar galería (ESC)"
+                aria-label="Cerrar galería">
+          <i class="fas fa-times"></i>
         </button>
         
-        <button type="button" 
-                class="lightbox-nav lightbox-next" 
-                (click)="navigateLightbox(1)"
-                title="Siguiente imagen (→)"
-                aria-label="Siguiente imagen">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      
-      <!-- Indicadores de puntos -->
-      <div *ngIf="getTotalImages() > 1 && getTotalImages() <= 8" class="lightbox-dots">
-        <button *ngFor="let image of currentItem.images; let i = index"
-                class="lightbox-dot"
-                [class.active]="i === currentImageIndex"
-                (click)="goToImage(i)"
-                [title]="'Ir a imagen ' + (i + 1)"
-                [attr.aria-label]="'Ver imagen ' + (i + 1)">
-        </button>
-      </div>
-      
-      <!-- Miniaturas navegables (para más de 8 imágenes) -->
-      <div *ngIf="getTotalImages() > 8" class="lightbox-thumbnails">
-        <div class="thumbnails-container">
-          <button *ngFor="let image of currentItem.images; let i = index"
-                  class="thumbnail-btn"
-                  [class.active]="i === currentImageIndex"
-                  (click)="goToImage(i)"
-                  [title]="image.alt">
-            <img [src]="image.thumb" 
-                 [alt]="'Miniatura ' + (i + 1)"
-                 class="thumbnail-image">
+        <!-- Imagen principal -->
+        <div class="lightbox-img-container">
+          <img *ngIf="getCurrentImage()" 
+               [src]="getCurrentImage()!.src" 
+               [alt]="getCurrentImage()!.alt" 
+               class="lightbox-img">
+        </div>
+        
+        <!-- Información de la imagen -->
+        <div class="lightbox-info">
+          <div class="lightbox-caption">
+            <h5>{{currentItem.title}}</h5>
+            <p *ngIf="getCurrentImage()">{{getCurrentImage()!.alt}}</p>
+          </div>
+          
+          <!-- Contador de imágenes -->
+          <div class="lightbox-counter" *ngIf="getTotalImages() > 1">
+            {{currentImageIndex + 1}} / {{getTotalImages()}}
+          </div>
+        </div>
+        
+        <!-- Controles de navegación -->
+        <div *ngIf="getTotalImages() > 1" class="lightbox-navigation">
+          <button type="button" 
+                  class="lightbox-nav lightbox-prev" 
+                  (click)="navigateLightbox(-1)"
+                  title="Imagen anterior (←)"
+                  aria-label="Imagen anterior">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <button type="button" 
+                  class="lightbox-nav lightbox-next" 
+                  (click)="navigateLightbox(1)"
+                  title="Siguiente imagen (→)"
+                  aria-label="Siguiente imagen">
+            <i class="fas fa-chevron-right"></i>
           </button>
         </div>
+        
+        <!-- Indicadores de puntos -->
+        <div *ngIf="getTotalImages() > 1 && getTotalImages() <= 8" class="lightbox-dots">
+          <button *ngFor="let image of currentItem.images; let i = index"
+                  class="lightbox-dot"
+                  [class.active]="i === currentImageIndex"
+                  (click)="goToImage(i)"
+                  [title]="'Ir a imagen ' + (i + 1)"
+                  [attr.aria-label]="'Ver imagen ' + (i + 1)">
+          </button>
+        </div>
+        
+        <!-- Miniaturas navegables (para más de 8 imágenes) -->
+        <div *ngIf="getTotalImages() > 8" class="lightbox-thumbnails">
+          <div class="thumbnails-container">
+            <button *ngFor="let image of currentItem.images; let i = index"
+                    class="thumbnail-btn"
+                    [class.active]="i === currentImageIndex"
+                    (click)="goToImage(i)"
+                    [title]="image.alt">
+              <img [src]="image.thumb" 
+                   [alt]="'Miniatura ' + (i + 1)"
+                   class="thumbnail-image">
+            </button>
+          </div>
+        </div>
       </div>
-      
     </div>
   </div>
 </section>
