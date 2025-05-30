@@ -19,14 +19,19 @@ export class ZoneService {
     };
 
     return this.apiService.get<ZoneResponse>(this.endpoint, params).pipe(
-      map((response: ZoneResponse) => response.data.map(item => ({
-        id: item.id,
-        documentId: item.documentId,
-        name: item.name,
-        description: item.description,
-        images: item.images?.map(img => `${environment.strapiUrl}${img.url}`) || [],
-        items: item.items || { kitchenItems: [] }
-      })))
+      map((response: ZoneResponse) => {
+        console.log('API Response:', response); // Para debugging
+        return response.data.map(item => ({
+          id: item.id,
+          documentId: item.documentId,
+          name: item.name,
+          description: item.description,
+          images: item.images?.map(img => `${environment.strapiUrl}${img.url}`) || [],
+          items: {
+            Items: item.items?.Items || []
+          }
+        }));
+      })
     );
   }
 } 

@@ -31,10 +31,7 @@ export interface ZoneResponse {
       publishedAt: string;
     }>;
     items: {
-      kitchenItems: Array<{
-        name: string;
-        category: string;
-      }>;
+      Items: string[];
     };
     createdAt: string;
     updatedAt: string;
@@ -70,9 +67,6 @@ export interface Zone {
   description: string;
   images: string[];
   items: {
-    kitchenItems: Array<{
-      name: string;
-      category: string;
-    }>;
+    Items: string[];
   };
 } 

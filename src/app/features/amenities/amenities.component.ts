@@ -38,6 +38,7 @@ export class AmenitiesComponent implements OnInit {
     
     this.zoneService.getZones().subscribe({
       next: (zones) => {
+        console.log('Received zones:', zones);
         this.facilities = zones;
         this.facilitiesLoading = false;
       },
@@ -55,6 +56,7 @@ export class AmenitiesComponent implements OnInit {
     
     this.additionalServiceService.getAdditionalServices().subscribe({
       next: (services) => {
+        console.log('Received services:', services);
         this.additionalServices = services;
         this.isLoading = false;
       },
@@ -73,11 +75,23 @@ export class AmenitiesComponent implements OnInit {
     return `Desde ${price.toLocaleString('es-AR')}$`;
   }
 
-  getUniqueCategories(items: Array<{ name: string; category: string }>): string[] {
-    return [...new Set(items.map(item => item.category))];
+  hasItems(facility: Zone): boolean {
+    return !!facility?.items?.Items?.length;
   }
 
-  getItemsByCategory(items: Array<{ name: string; category: string }>, category: string): Array<{ name: string; category: string }> {
-    return items.filter(item => item.category === category);
+  hasImages(facility: Zone): boolean {
+    return !!facility?.images?.length;
+  }
+
+  getMainImage(facility: Zone): string {
+    return facility?.images?.[0] || 'assets/images/placeholder.jpg';
+  }
+
+  getAdditionalImages(facility: Zone): string[] {
+    return facility?.images?.slice(1) || [];
+  }
+
+  hasAdditionalImages(facility: Zone): boolean {
+    return (facility?.images?.length || 0) > 1;
   }
 }

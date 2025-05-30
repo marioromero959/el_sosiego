@@ -45,29 +45,29 @@
     <div *ngFor="let facility of facilities; let i = index" class="facility-item" [class.bg-light-custom]="i % 2 === 1" [id]="facility.documentId">
       <div class="container">
         <div class="row align-items-center" [class.flex-row-reverse]="i % 2 === 1">
+          <!-- Main Image -->
           <div class="col-lg-6 mb-4 mb-lg-0">
             <div class="facility-image">
-              <img [src]="facility.images[0]" [alt]="facility.name" class="img-fluid rounded shadow" *ngIf="facility.images?.length">
-              <!-- Placeholder image if no images available -->
-              <img src="assets/images/placeholder.jpg" [alt]="facility.name" class="img-fluid rounded shadow" *ngIf="!facility.images?.length">
+              <img [src]="getMainImage(facility)" [alt]="facility.name" class="img-fluid rounded shadow">
             </div>
           </div>
           
+          <!-- Content -->
           <div class="col-lg-6">
             <div class="facility-content">
               <h3>{{facility.name}}</h3>
               <div class="heading-divider"></div>
               <p>{{facility.description}}</p>
               
-              <div *ngIf="facility.items?.kitchenItems?.length" class="mt-4">
+              <!-- Items List -->
+              <div *ngIf="hasItems(facility)" class="mt-4">
                 <h4 class="mb-3">Equipamiento disponible:</h4>
                 <div class="row">
-                  <div class="col-md-6" *ngFor="let category of getUniqueCategories(facility.items.kitchenItems)">
-                    <h5 class="text-primary">{{category}}</h5>
+                  <div class="col-12">
                     <ul class="feature-list">
-                      <li *ngFor="let item of getItemsByCategory(facility.items.kitchenItems, category)">
+                      <li *ngFor="let item of facility.items.Items">
                         <i class="fas fa-check-circle text-primary"></i>
-                        <span>{{item.name}}</span>
+                        <span>{{item}}</span>
                       </li>
                     </ul>
                   </div>
@@ -78,11 +78,11 @@
         </div>
 
         <!-- Additional Images Gallery -->
-        <div class="row mt-4" *ngIf="facility.images?.length > 1">
+        <div class="row mt-4" *ngIf="hasAdditionalImages(facility)">
           <div class="col-12">
             <h4 class="text-center mb-3">Más imágenes</h4>
             <div class="row g-3">
-              <div class="col-6 col-md-3" *ngFor="let image of facility.images.slice(1)">
+              <div class="col-6 col-md-3" *ngFor="let image of getAdditionalImages(facility)">
                 <img [src]="image" [alt]="facility.name" class="img-fluid rounded shadow">
               </div>
             </div>
