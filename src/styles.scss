@@ -12,6 +12,10 @@
   --gray-dark: #6c757d;
   --font-primary: 'Playfair Display', serif;
   --font-secondary: 'Raleway', sans-serif;
+  
+  /* Darkened versions of colors */
+  --primary-color-dark: color-mix(in srgb, var(--primary-color) 90%, black);
+  --secondary-color-dark: color-mix(in srgb, var(--secondary-color) 90%, black);
 }
 
 /* Estilos básicos */
@@ -42,8 +46,8 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--primary-color);
   
   &:hover {
-    background-color: darken(#4a6741, 10%);
-    border-color: darken(#4a6741, 10%);
+    background-color: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
   }
 }
 
@@ -52,8 +56,8 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--secondary-color);
   
   &:hover {
-    background-color: darken(#a57c50, 10%);
-    border-color: darken(#a57c50, 10%);
+    background-color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
   }
 }
 

@@ -32,7 +32,7 @@
         <div class="gallery-card" (click)="openLightbox(item)">
           
           <!-- Imagen principal (primera del array) -->
-          <img [src]="item.images[0]?.thumb" [alt]="item.title" class="img-fluid">
+          <img [src]="item.images[0].thumb" [alt]="item.title" class="img-fluid">
           
           <!-- Indicador de múltiples imágenes -->
           <div class="image-count-badge" *ngIf="item.images.length > 1">

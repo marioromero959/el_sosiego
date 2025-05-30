@@ -71,8 +71,8 @@
                 <!-- Slider de imágenes -->
                 <div class="room-image-slider"
                      (mouseenter)="onSliderMouseEnter(roomIndex)"
-                     (mouseleave)="onSliderMouseLeave(roomIndex, room.images?.length || 0)"
-                     (keydown)="onKeyDown($event, roomIndex, room.images?.length || 0)"
+                     (mouseleave)="onSliderMouseLeave(roomIndex, getImageCount(room))"
+                     (keydown)="onKeyDown($event, roomIndex, getImageCount(room))"
                      tabindex="0"
                      role="region"
                      [attr.aria-label]="'Galería de imágenes de ' + room.name">
@@ -83,7 +83,7 @@
                          class="slider-image"
                          [class.active]="imgIndex === getCurrentImageIndex(roomIndex)"
                          [attr.aria-hidden]="imgIndex !== getCurrentImageIndex(roomIndex)">
-                      <img [src]="image" 
+                      <img [src]="apiService.getImageUrl(image.url)" 
                            [alt]="room.name + ' - Imagen ' + (imgIndex + 1)"
                            class="img-fluid rounded shadow slider-clickable-image"
                            loading="lazy"
@@ -93,10 +93,10 @@
                   </div>
                   
                   <!-- Controles de navegación -->
-                  <div *ngIf="room.images && room.images.length > 1" class="slider-controls">
+                  <div *ngIf="getImageCount(room) > 1" class="slider-controls">
                     <!-- Botón anterior -->
                     <button class="slider-btn slider-btn-prev"
-                            (click)="prevImage(roomIndex, room.images.length)"
+                            (click)="prevImage(roomIndex, getImageCount(room))"
                             type="button"
                             aria-label="Imagen anterior"
                             title="Imagen anterior">
@@ -105,7 +105,7 @@
                     
                     <!-- Botón siguiente -->
                     <button class="slider-btn slider-btn-next"
-                            (click)="nextImage(roomIndex, room.images.length)"
+                            (click)="nextImage(roomIndex, getImageCount(room))"
                             type="button"
                             aria-label="Siguiente imagen"
                             title="Siguiente imagen">
@@ -114,7 +114,7 @@
                   </div>
                   
                   <!-- Indicadores de puntos -->
-                  <div *ngIf="room.images && room.images.length > 1" class="slider-dots">
+                  <div *ngIf="getImageCount(room) > 1" class="slider-dots">
                     <button *ngFor="let image of room.images; let dotIndex = index"
                             class="slider-dot"
                             [class.active]="dotIndex === getCurrentImageIndex(roomIndex)"
@@ -126,8 +126,8 @@
                   </div>
                   
                   <!-- Contador de imágenes -->
-                  <div *ngIf="room.images && room.images.length > 1" class="image-counter">
-                    {{getCurrentImageIndex(roomIndex) + 1}} / {{room.images.length}}
+                  <div *ngIf="getImageCount(room) > 1" class="image-counter">
+                    {{getCurrentImageIndex(roomIndex) + 1}} / {{getImageCount(room)}}
                   </div>
                 </div>
                 
@@ -157,13 +157,13 @@
                 </div>
                 
                 <!-- Precio y botón de reserva -->
-                <!-- <div class="room-price-container">
+                <div class="room-price-container">
                   <div class="room-price">
                     <span class="price">{{room.pricePerNight}}€</span> / noche
                     <small>*Precios por habitación, desayuno incluido, IVA incluido</small>
                   </div>
                   <a routerLink="/reservar" [queryParams]="{roomType: room.type}" class="btn btn-primary">Reservar ahora</a>
-                </div> -->
+                </div>
               </div>
             </div>
           </div>
@@ -338,13 +338,13 @@
     
     <!-- Imagen principal -->
     <div class="fullscreen-image-container">
-      <img [src]="rooms[fullscreenRoomIndex]?.images?.[fullscreenImageIndex]" 
-           [alt]="rooms[fullscreenRoomIndex]?.name + ' - Imagen ' + (fullscreenImageIndex + 1)"
+      <img [src]="getImageUrl(rooms[fullscreenRoomIndex], fullscreenImageIndex)"
+           [alt]="rooms[fullscreenRoomIndex].name + ' - Imagen ' + (fullscreenImageIndex + 1)"
            class="fullscreen-image">
     </div>
     
     <!-- Controles de navegación -->
-    <div *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1" 
+    <div *ngIf="getImageCount(rooms[fullscreenRoomIndex]) > 1" 
          class="fullscreen-controls">
       
       <!-- Botón anterior -->
@@ -368,14 +368,14 @@
     
     <!-- Información de la habitación -->
     <div class="fullscreen-info">
-      <h3>{{rooms[fullscreenRoomIndex]?.name}}</h3>
-      <p *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1">
-        {{fullscreenImageIndex + 1}} de {{rooms[fullscreenRoomIndex].images.length}}
+      <h3>{{rooms[fullscreenRoomIndex].name}}</h3>
+      <p *ngIf="getImageCount(rooms[fullscreenRoomIndex]) > 1">
+        {{fullscreenImageIndex + 1}} de {{getImageCount(rooms[fullscreenRoomIndex])}}
       </p>
     </div>
     
     <!-- Indicadores de puntos -->
-    <div *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1" 
+    <div *ngIf="getImageCount(rooms[fullscreenRoomIndex]) > 1" 
          class="fullscreen-dots">
       <button *ngFor="let image of rooms[fullscreenRoomIndex].images; let dotIndex = index"
               class="fullscreen-dot"
@@ -388,7 +388,7 @@
     </div>
     
     <!-- Miniaturas (thumbnails) -->
-    <div *ngIf="rooms[fullscreenRoomIndex]?.images && rooms[fullscreenRoomIndex].images.length > 1" 
+    <div *ngIf="getImageCount(rooms[fullscreenRoomIndex]) > 1" 
          class="fullscreen-thumbnails">
       <div class="thumbnails-container">
         <button *ngFor="let image of rooms[fullscreenRoomIndex].images; let thumbIndex = index"
@@ -397,8 +397,8 @@
                 (click)="goToFullscreenImage(thumbIndex)"
                 type="button"
                 [attr.aria-label]="'Ver imagen ' + (thumbIndex + 1)">
-          <img [src]="image" 
-               [alt]="'Miniatura ' + (thumbIndex + 1)"
+          <img [src]="apiService.getImageUrl(image.url)" 
+               [alt]="'Miniatura' + (thumbIndex + 1)"
                class="thumbnail-image">
         </button>
       </div>

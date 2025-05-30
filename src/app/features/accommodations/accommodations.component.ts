@@ -2,7 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReservationService } from '../../core/services/reservation.service';
-import { Room } from '../../core/models/reservation.model';
+import { Room } from '../../core/models/room.model';
+import { ReservationData } from '../../core/models/reservation.model';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-accommodations',
@@ -59,7 +61,10 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
     }
   ];
 
-  constructor(private reservationService: ReservationService) { }
+  constructor(
+    private reservationService: ReservationService,
+    public apiService: ApiService
+  ) { }
 
   ngOnInit(): void {
     this.loadRooms();
@@ -97,7 +102,6 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
   }
 
   private initializeSliders(): void {
-    // Inicializar arrays del tamaño correcto
     this.currentImageIndex = [];
     this.autoSlideIntervals = [];
 
@@ -177,13 +181,9 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
     this.fullscreenRoomIndex = roomIndex;
     this.fullscreenImageIndex = imageIndex;
     
-    // Bloquear scroll del body
     document.body.style.overflow = 'hidden';
-    
-    // Agregar event listener para teclado
     document.addEventListener('keydown', this.handleKeyboardEvents.bind(this));
     
-    // Iniciar auto-slide en modal si hay múltiples imágenes
     const room = this.rooms[roomIndex];
     if (room.images && room.images.length > 1) {
       this.startFullscreenAutoSlide();
@@ -207,7 +207,7 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
     if (!this.isFullscreenOpen) return;
 
     const room = this.rooms[this.fullscreenRoomIndex];
-    const imageCount = room.images?.length || 0;
+    const imageCount = this.getImageCount(room);
 
     switch (event.key) {
       case 'Escape':
@@ -227,7 +227,7 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
 
   fullscreenNextImage(): void {
     const room = this.rooms[this.fullscreenRoomIndex];
-    const imageCount = room.images?.length || 0;
+    const imageCount = this.getImageCount(room);
     if (imageCount <= 1) return;
     
     this.fullscreenImageIndex = (this.fullscreenImageIndex + 1) % imageCount;
@@ -236,7 +236,7 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
 
   fullscreenPrevImage(): void {
     const room = this.rooms[this.fullscreenRoomIndex];
-    const imageCount = room.images?.length || 0;
+    const imageCount = this.getImageCount(room);
     if (imageCount <= 1) return;
     
     this.fullscreenImageIndex = this.fullscreenImageIndex === 0 
@@ -287,5 +287,67 @@ export class AccommodationsComponent implements OnInit, OnDestroy {
     if (event.target === event.currentTarget) {
       this.closeFullscreen();
     }
+  }
+
+  getReservations(): void {
+    this.reservationService.getReservations().subscribe(
+      reservations => {
+        console.log('Todas las reservas:', reservations);
+      }
+    );
+  }
+
+  getReservationsByStatus(): void {
+    this.reservationService.getReservationsByStatus('confirmed').subscribe(
+      reservations => {
+        console.log('Reservas confirmadas:', reservations);
+      }
+    );
+  }
+
+  getReservationsByRoom(): void {
+    this.reservationService.getReservationsByRoom(1).subscribe(
+      reservations => {
+        console.log('Reservas de la habitación 1:', reservations);
+      }
+    );
+  }
+
+  getReservationsByCustomer(): void {
+    this.reservationService.getReservationsByCustomer('cliente@email.com').subscribe(
+      reservations => {
+        console.log('Reservas del cliente:', reservations);
+      }
+    );
+  }
+
+  createReservation(): void {
+    const newReservation: ReservationData = {
+      checkIn: new Date('2024-04-01'),
+      checkOut: new Date('2024-04-03'),
+      guests: 2,
+      totalPrice: 400,
+      customerName: 'Juan Pérez',
+      customerEmail: 'juan@email.com',
+      customerPhone: '123456789',
+      roomId: 1
+    };
+
+    this.reservationService.createReservation(newReservation).subscribe(
+      reservation => {
+        console.log('Reserva creada:', reservation);
+      }
+    );
+  }
+
+  getImageUrl(room: Room, imageIndex: number): string {
+    if (!room.images || !room.images[imageIndex]) {
+      return 'assets/images/placeholder.jpg';
+    }
+    return this.apiService.getImageUrl(room.images[imageIndex].url);
+  }
+
+  getImageCount(room: Room): number {
+    return room.images?.length || 0;
   }
 }

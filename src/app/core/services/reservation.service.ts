@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError, tap, delay } from 'rxjs/operators';
-import { ReservationData, Room, DateAvailability, CalendarMonth } from '../models/reservation.model';
+import { Observable, of, map, catchError, tap, delay } from 'rxjs';
+import { ReservationData, DateAvailability, CalendarMonth, Reservation } from '../models/reservation.model';
+import { Room } from '../models/room.model';
 import { environment } from '../../../environments/environment';
 import { addDays, startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, differenceInDays, isBefore, isAfter, isSameDay } from 'date-fns';
+import { ApiService, StrapiResponse } from './api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,72 +14,47 @@ export class ReservationService {
   private apiUrl = environment.apiUrl;
   private readonly PRICE_PER_NIGHT = 200; // Precio fijo en USD por noche
   
-  // Mock data for development
-  private mockRooms: Room[] = [
-    {
-      id: 1,
-      name: 'Habitación Estándar',
-      type: 'standard',
-      description: 'Acogedora habitación con todas las comodidades para una estancia agradable.',
-      capacity: 2,
-      pricePerNight: this.PRICE_PER_NIGHT,
-      size: 35,
-      beds: '2 Camas',
-      amenities: ['Wi-Fi', 'Baño compartido', 'Vista al jardín'],
-      images: ['assets/images/gallery/img83.jpeg', 'assets/images/gallery/img84.jpeg', 'assets/images/gallery/img89.jpeg', 'assets/images/gallery/img90.jpeg', 'assets/images/gallery/img91.jpeg'],
-      available: true
-    },
-    {
-      id: 2,
-      name: 'Habitación Superior',
-      type: 'superior',
-      description: 'Agradable habitación con todas las comodidades para sentirse como en casa.',
-      capacity: 2,
-      pricePerNight: this.PRICE_PER_NIGHT,
-      size: 35,
-      beds: '2 Camas',
-      amenities: ['Wi-Fi', 'Baño compartido', 'Vista al jardín'],
-      images: ['assets/images/gallery/img85.jpeg', 'assets/images/gallery/img86.jpeg', 'assets/images/gallery/img87.jpeg', 'assets/images/gallery/img88.jpeg'],
-      available: true
-    },
-    {
-      id: 3,
-      name: 'Suite Matrimonial',
-      type: 'family',
-      description: 'Perfecta para familias, con amplios espacios y todas las comodidades.',
-      capacity: 2,
-      pricePerNight: this.PRICE_PER_NIGHT,
-      size: 50,
-      beds: '1 Cama King',
-      amenities: ['Wi-Fi', 'Baño privado', 'Sala de estar'],
-      images: ['assets/images/gallery/img98.jpeg', 'assets/images/gallery/img99.jpeg', 'assets/images/gallery/img100.jpeg'],
-      available: true
-    },
-    {
-      id: 4,
-      name: 'Oficina',
-      type: 'oficina',
-      description: 'Ambiente profesional y confortable, ideal para enfocarte en tus proyectos.',
-      capacity: 1,
-      pricePerNight: this.PRICE_PER_NIGHT,
-      size: 50,
-      beds: '1 Cama',
-      amenities: ['Wi-Fi', 'Escritorio', 'Silla de oficina'],
-      images: ['assets/images/gallery/img64.jpeg','assets/images/gallery/img65.jpeg','assets/images/gallery/img66.jpeg','assets/images/gallery/img67.jpeg'],
-      available: true
-    }
-  ];
+  constructor(private http: HttpClient, private apiService: ApiService) { }
 
-  // Simulamos algunas fechas específicas que están ocupadas
-  private bookedDates: Date[] = [
-    new Date(2025, 4, 28), // 28 de Mayo
-    new Date(2025, 4, 29), // 29 de Mayo
-    new Date(2025, 5, 15), // 15 de Junio
-    new Date(2025, 5, 16), // 16 de Junio
-    new Date(2025, 5, 17), // 17 de Junio
-  ];
+  // Obtener todas las habitaciones
+  getRooms(): Observable<Room[]> {
+    return this.apiService.get<Room>('rooms', {
+      populate: '*'
+    }).pipe(
+      map(response => {
+        if (!response.data) {
+          console.error('No se recibieron datos de la API');
+          return [];
+        }
+        if (Array.isArray(response.data)) {
+          return response.data;
+        }
+        return [response.data];
+      }),
+      catchError(error => {
+        console.error('Error al obtener las habitaciones:', error);
+        return of([]);
+      })
+    );
+  }
 
-  constructor(private http: HttpClient) { }
+  // Obtener una habitación específica
+  getRoom(id: number): Observable<Room> {
+    return this.apiService.get<Room>(`rooms/${id}`, {
+      populate: '*'
+    }).pipe(
+      map(response => {
+        if (!response.data) {
+          throw new Error('No se encontró la habitación');
+        }
+        return response.data as Room;
+      }),
+      catchError(error => {
+        console.error(`Error al obtener la habitación ${id}:`, error);
+        throw error;
+      })
+    );
+  }
 
   // Simulación de disponibilidad por fechas
   private generateMockAvailability(startDate: Date, endDate: Date): DateAvailability[] {
@@ -147,59 +123,34 @@ export class ReservationService {
   }
 
   // Verificar si un rango de fechas está disponible
-  checkDateRangeAvailability(checkIn: Date, checkOut: Date, guests: number): Observable<{available: boolean, totalPrice: number}> {
-    // En un entorno real: return this.http.post<any>(`${this.apiUrl}/check-availability`, { checkIn, checkOut, guests });
-    
-    console.log("Checking availability from", checkIn, "to", checkOut, "for", guests, "guests");
-    
-    // Generar disponibilidad para el rango incluyendo la fecha de checkout para la verificación
-    const availability = this.generateMockAvailability(checkIn, checkOut);
-    console.log("Generated availability:", availability);
-    
-    // Verificar disponibilidad solo para las fechas de estadía (sin incluir checkout)
-    // El checkout no necesita estar disponible ya que el huésped se va ese día
-    const stayDates = availability.slice(0, -1); // Remover el último día (checkout)
-    console.log("Stay dates to check:", stayDates);
-    
-    // Verificar que todas las fechas de estadía estén disponibles
-    const allDaysAvailable = stayDates.every(day => {
-      const dayAvailable = day.available && day.availableRooms >= Math.ceil(guests / 2);
-      console.log(`Day ${day.date.toDateString()}: available=${day.available}, rooms=${day.availableRooms}, needed=${Math.ceil(guests / 2)}, result=${dayAvailable}`);
-      return dayAvailable;
-    });
-    
-    // Calcular precio total basado en las noches de estadía
-    const nights = differenceInDays(checkOut, checkIn);
-    const totalPrice = allDaysAvailable ? (nights * this.PRICE_PER_NIGHT) : 0;
-    
-    console.log(`Availability check result: available=${allDaysAvailable}, nights=${nights}, totalPrice=${totalPrice}`);
-    
-    return of({
-      available: allDaysAvailable,
-      totalPrice: totalPrice
-    }).pipe(delay(600));
+  checkDateRangeAvailability(checkIn: Date, checkOut: Date, roomId: number): Observable<{available: boolean, totalPrice: number}> {
+    return this.apiService.post<any>('reservations/check-availability', {
+      checkIn,
+      checkOut,
+      roomId
+    }).pipe(
+      map(response => ({
+        available: response.data.available,
+        totalPrice: response.data.totalPrice
+      }))
+    );
   }
 
-  createReservation(reservation: ReservationData): Observable<ReservationData> {
-    // En un entorno real: return this.http.post<ReservationData>(`${this.apiUrl}/reservations`, reservation);
-    
-    const newReservation: ReservationData = {
-      ...reservation,
-      id: Math.floor(Math.random() * 1000) + 1,
-      status: 'confirmed',
-      createdAt: new Date()
-    };
-    
-    // Simular agregar las fechas a las reservadas
-    if (reservation.checkIn && reservation.checkOut) {
-      const reservedDates = eachDayOfInterval({ 
-        start: reservation.checkIn, 
-        end: addDays(reservation.checkOut, -1) // No incluir el día de checkout
-      });
-      this.bookedDates.push(...reservedDates);
-    }
-    
-    return of(newReservation).pipe(delay(1200));
+  createReservation(reservationData: ReservationData): Observable<Reservation> {
+    return this.apiService.post<Reservation>('reservations', {
+      checkIn: reservationData.checkIn,
+      checkOut: reservationData.checkOut,
+      guests: reservationData.guests,
+      status: reservationData.status || 'pending',
+      totalPrice: reservationData.totalPrice,
+      customerName: reservationData.customerName,
+      customerEmail: reservationData.customerEmail,
+      customerPhone: reservationData.customerPhone,
+      specialRequests: reservationData.specialRequests,
+      room: reservationData.roomId
+    }).pipe(
+      map(response => response.data as Reservation)
+    );
   }
 
   // Obtener precio por noche
@@ -207,15 +158,14 @@ export class ReservationService {
     return this.PRICE_PER_NIGHT;
   }
 
-  // Mantener métodos anteriores para compatibilidad
-  getRooms(): Observable<Room[]> {
-    return of(this.mockRooms).pipe(delay(800));
-  }
-
-  getRoom(id: number): Observable<Room> {
-    const room = this.mockRooms.find(r => r.id === id);
-    return of(room as Room).pipe(delay(500));
-  }
+  // Simulamos algunas fechas específicas que están ocupadas
+  private bookedDates: Date[] = [
+    new Date(2025, 4, 28), // 28 de Mayo
+    new Date(2025, 4, 29), // 29 de Mayo
+    new Date(2025, 5, 15), // 15 de Junio
+    new Date(2025, 5, 16), // 16 de Junio
+    new Date(2025, 5, 17), // 17 de Junio
+  ];
 
   // Método auxiliar para verificar si una fecha específica está disponible
   isDateAvailable(date: Date): boolean {
@@ -232,5 +182,77 @@ export class ReservationService {
   // Método para obtener las fechas ocupadas (útil para debugging)
   getBookedDates(): Date[] {
     return [...this.bookedDates];
+  }
+
+  // Obtener todas las reservas
+  getReservations(filters?: any): Observable<Reservation[]> {
+    return this.apiService.get<Reservation>('reservations', {
+      ...filters,
+      populate: ['room'], // Incluir información de la habitación
+      sort: 'createdAt:desc'
+    }).pipe(
+      map(response => {
+        if (Array.isArray(response.data)) {
+          return response.data;
+        }
+        return [response.data];
+      })
+    );
+  }
+
+  // Obtener una reserva específica
+  getReservation(id: number): Observable<Reservation> {
+    return this.apiService.getById<Reservation>('reservations', id).pipe(
+      map(response => response.data as Reservation)
+    );
+  }
+
+  // Actualizar estado de una reserva
+  updateReservationStatus(id: number, status: string): Observable<Reservation> {
+    return this.apiService.put<Reservation>('reservations', id, {
+      status: status
+    }).pipe(
+      map(response => response.data as Reservation)
+    );
+  }
+
+  // Cancelar una reserva
+  cancelReservation(id: number): Observable<Reservation> {
+    return this.updateReservationStatus(id, 'cancelled');
+  }
+
+  // Obtener reservas por habitación
+  getReservationsByRoom(roomId: number): Observable<Reservation[]> {
+    return this.getReservations({
+      filters: {
+        room: {
+          id: {
+            $eq: roomId
+          }
+        }
+      }
+    });
+  }
+
+  // Obtener reservas por estado
+  getReservationsByStatus(status: string): Observable<Reservation[]> {
+    return this.getReservations({
+      filters: {
+        status: {
+          $eq: status
+        }
+      }
+    });
+  }
+
+  // Obtener reservas por cliente
+  getReservationsByCustomer(email: string): Observable<Reservation[]> {
+    return this.getReservations({
+      filters: {
+        customerEmail: {
+          $eq: email
+        }
+      }
+    });
   }
 }
