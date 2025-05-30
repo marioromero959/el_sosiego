@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AdditionalServiceService } from '../../services/additional-service.service';
+import { AdditionalService } from '../../models/additional-service.model';
 
 @Component({
   selector: 'app-amenities',
@@ -9,7 +11,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './amenities.component.html',
   styleUrl: './amenities.component.scss'
 })
-export class AmenitiesComponent {
+export class AmenitiesComponent implements OnInit {
   facilities = [
     {
       id: 'dining',
@@ -109,42 +111,37 @@ export class AmenitiesComponent {
     }
   ];
   
-  additionalServices = [
-    {
-      icon: 'fas fa-car',
-      title: 'Cuidado de Vehículos',
-      description: 'Persona encargada de custodiar todos tus vehiculos dentro de la propiedad.',
-      price: 'Desde 2.000$/día'
-    },
-    {
-      icon: 'fas fa-utensils',
-      title: 'Desayuno incluido',
-      description: 'Con la reserva de 5 o más dias en el Sosiego te ofrecemos un desayuno casero con productos locales.',
-      price: 'En promoción'
-    },
-    {
-      icon: 'fas fa-glass-cheers',
-      title: 'Celebraciones Especiales',
-      description: 'Organizamos eventos como cumpleaños, casamientos o pequeñas reuniones familiares.',
-      price: 'Consultar precios'
-    },
-    {
-      icon: 'fas fa-spa',
-      title: 'Servicio de Masajes',
-      description: 'Personal cualificado para realizar una sesion de masajes para descontracturar y aliviar los musculos.',
-      price: '15.000$/persona'
-    },
-    {
-      icon: 'fas fa-shuttle-van',
-      title: 'Traslados',
-      description: 'Servicio de recogida y traslado a estaciones de tren o aeropuertos cercanos.',
-      price: 'Desde 20.000$€'
-    },
-    {
-      icon: 'fas fa-shopping-basket',
-      title: 'Productos Locales',
-      description: 'Selección de productos artesanales y gourmet de la región para llevar.',
-      price: 'Varios precios'
+  additionalServices: AdditionalService[] = [];
+  isLoading = true;
+  error: string | null = null;
+
+  constructor(private additionalServiceService: AdditionalServiceService) {}
+
+  ngOnInit() {
+    this.loadAdditionalServices();
+  }
+
+  private loadAdditionalServices() {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.additionalServiceService.getAdditionalServices().subscribe({
+      next: (services) => {
+        this.additionalServices = services;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading additional services:', error);
+        this.error = 'Error al cargar los servicios adicionales. Por favor, intente más tarde.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  getFormattedPrice(price: number): string {
+    if (price === 0) {
+      return 'Incluido';
     }
-  ];
+    return `Desde ${price.toLocaleString('es-AR')}$`;
+  }
 }
