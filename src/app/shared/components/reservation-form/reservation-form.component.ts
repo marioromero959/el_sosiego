@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ReservationService } from '../../../core/services/reservation.service';
+import { ReservationService, CreateReservationResponse, CreateReservationData } from '../../../core/services/reservation.service';
 import { DateAvailability, CalendarMonth } from '../../../core/models/reservation.model';
 import { AlertModalComponent, AlertModalData } from '../alert-modal/alert-modal.component';
 import { format, addDays, addMonths, startOfMonth, endOfMonth, isSameDay, isBefore, isAfter, differenceInDays } from 'date-fns';
@@ -33,6 +33,9 @@ export class ReservationFormComponent implements OnInit {
   // Variables para mostrar disponibilidad
   availabilityResult: {available: boolean, totalPrice: number} | null = null;
   showBookingForm: boolean = false;
+  
+  // Resultado de la reserva creada
+  createdReservation: CreateReservationResponse | null = null;
   
   // Precio por noche
   pricePerNight: number = 0;
@@ -68,7 +71,7 @@ export class ReservationFormComponent implements OnInit {
     if (!this.simplified) {
       this.reservationForm.addControl('name', this.fb.control('', [Validators.required, Validators.minLength(3)]));
       this.reservationForm.addControl('email', this.fb.control('', [Validators.required, Validators.email]));
-      this.reservationForm.addControl('phone', this.fb.control('', [Validators.required, Validators.pattern(/^\+?[0-9\s-]{9,15}$/)]));
+      this.reservationForm.addControl('phone', this.fb.control('', [Validators.required, Validators.pattern(/^(\+?57)?[0-9\s-]{10,15}$/)]));
       this.reservationForm.addControl('specialRequests', this.fb.control(''));
     }
   }
@@ -240,7 +243,7 @@ export class ReservationFormComponent implements OnInit {
       this.reservationForm.value.guests
     ).subscribe({
       next: (result) => {
-        console.log(result);
+        console.log('✅ Availability check result:', result);
         
         this.availabilityResult = result;
         this.isLoading = false;
@@ -250,7 +253,7 @@ export class ReservationFormComponent implements OnInit {
         } else {
           this.showAlert({
             title: 'Fechas No Disponibles',
-            message: 'Lo sentimos, las fechas seleccionadas ya no están disponibles o no hay suficiente capacidad para el número de huéspedes. Por favor, elige otras fechas o reduce el número de huéspedes.',
+            message: result.message || 'Lo sentimos, las fechas seleccionadas ya no están disponibles o no hay suficiente capacidad para el número de huéspedes. Por favor, elige otras fechas o reduce el número de huéspedes.',
             type: 'error',
             confirmText: 'Seleccionar otras fechas'
           });
@@ -258,16 +261,75 @@ export class ReservationFormComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error checking availability:', error);
+        console.error('❌ Error checking availability:', error);
         this.isLoading = false;
         this.showAlert({
           title: 'Error de Verificación',
-          message: 'Ocurrió un error al verificar la disponibilidad. Por favor, intenta de nuevo.',
+          message: error.message || 'Ocurrió un error al verificar la disponibilidad. Por favor, intenta de nuevo.',
           type: 'error',
           confirmText: 'Reintentar'
         });
       }
     });
+  }
+
+  // Enviar reserva usando el nuevo método
+  submitReservation(): void {
+    if (this.reservationForm.invalid || !this.selectedCheckIn || !this.selectedCheckOut) {
+      this.markFormGroupTouched(this.reservationForm);
+      return;
+    }
+    
+    this.isLoading = true;
+    
+    // Usar la nueva estructura de datos
+    const reservationData: CreateReservationData = {
+      name: this.reservationForm.value.name,
+      email: this.reservationForm.value.email,
+      phone: this.reservationForm.value.phone,
+      checkIn: this.selectedCheckIn,
+      checkOut: this.selectedCheckOut,
+      guests: this.reservationForm.value.guests,
+      specialRequests: this.reservationForm.value.specialRequests || '',
+      totalPrice: this.availabilityResult?.totalPrice || 0
+    };
+    
+    console.log('📤 Submitting reservation:', reservationData);
+    
+    // Usar el nuevo método para crear reservas
+    this.reservationService.createReservationNew(reservationData)
+      .subscribe({
+        next: (result) => {
+          console.log('✅ Reservation created successfully:', result);
+          this.isLoading = false;
+          this.isSubmitted = true;
+          this.createdReservation = result;
+          
+          // Mostrar mensaje de éxito con código de confirmación
+          this.showAlert({
+            title: '🎉 ¡Reserva Confirmada!',
+            message: `Tu reserva ha sido creada exitosamente.
+            
+Código de confirmación: ${result.confirmationCode}
+
+Se ha enviado un email de confirmación a ${reservationData.email}.
+
+Puedes buscar tu reserva en cualquier momento usando tu código de confirmación.`,
+            type: 'success',
+            confirmText: 'Entendido'
+          });
+        },
+        error: (error) => {
+          console.error('❌ Error creating reservation:', error);
+          this.isLoading = false;
+          this.showAlert({
+            title: 'Error en la Reserva',
+            message: error.message || 'No pudimos procesar tu reserva. Por favor, intenta de nuevo o contacta nuestro soporte.',
+            type: 'error',
+            confirmText: 'Reintentar'
+          });
+        }
+      });
   }
 
   // Métodos auxiliares para el calendario
@@ -320,42 +382,6 @@ export class ReservationFormComponent implements OnInit {
     return date >= currentMonthStart && date <= currentMonthEnd;
   }
 
-  // Enviar reserva
-  submitReservation(): void {
-    if (this.reservationForm.invalid || !this.selectedCheckIn || !this.selectedCheckOut) {
-      this.markFormGroupTouched(this.reservationForm);
-      return;
-    }
-    
-    this.isLoading = true;
-    
-    const reservationData = {
-      ...this.reservationForm.value,
-      checkIn: this.selectedCheckIn,
-      checkOut: this.selectedCheckOut,
-      totalPrice: this.availabilityResult?.totalPrice || 0
-    };
-    
-    this.reservationService.createReservation(reservationData)
-      .subscribe({
-        next: (result) => {
-          this.isLoading = false;
-          this.isSubmitted = true;
-          console.log('Reservation created', result);
-        },
-        error: (error) => {
-          console.error('Error creating reservation', error);
-          this.isLoading = false;
-          this.showAlert({
-            title: 'Error en la Reserva',
-            message: 'No pudimos procesar tu reserva. Por favor, intenta de nuevo o contacta nuestro soporte.',
-            type: 'error',
-            confirmText: 'Reintentar'
-          });
-        }
-      });
-  }
-
   // Reiniciar formulario
   resetForm(): void {
     this.isSubmitted = false;
@@ -363,6 +389,7 @@ export class ReservationFormComponent implements OnInit {
     this.selectedCheckIn = null;
     this.selectedCheckOut = null;
     this.availabilityResult = null;
+    this.createdReservation = null;
     this.initForm();
   }
 
@@ -396,6 +423,16 @@ export class ReservationFormComponent implements OnInit {
         } 
       });
     }
+  }
+
+  // Formatear moneda
+  formatCurrency(amount: number): string {
+    return this.reservationService.formatCurrency(amount);
+  }
+
+  // Navegar a búsqueda de reservas
+  navigateToLookup(): void {
+    this.router.navigate(['/mi-reserva']);
   }
 
   // Métodos para el modal de alerta

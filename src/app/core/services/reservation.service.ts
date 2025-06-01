@@ -1,20 +1,62 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, map, catchError, tap, delay } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of, map, catchError, tap, delay, throwError } from 'rxjs';
 import { ReservationData, DateAvailability, CalendarMonth, Reservation } from '../models/reservation.model';
 import { Room } from '../models/room.model';
 import { environment } from '../../../environments/environment';
 import { addDays, startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, differenceInDays, isBefore, isAfter, isSameDay } from 'date-fns';
 import { ApiService, StrapiResponse } from './api.service';
 
+// Nuevas interfaces para la funcionalidad extendida
+export interface CreateReservationData {
+  name: string;
+  email: string;
+  phone: string;
+  checkIn: Date;
+  checkOut: Date;
+  guests: number;
+  specialRequests?: string;
+  totalPrice: number;
+}
+
+export interface CreateReservationResponse {
+  success: boolean;
+  reservation?: Reservation;
+  message?: string;
+  confirmationCode?: string;
+}
+
+export interface AvailabilityCheckResponse {
+  available: boolean;
+  totalPrice: number;
+  message?: string;
+  conflictingDates?: string[];
+}
+
+export interface ReservationLookupResponse {
+  success: boolean;
+  reservation?: any; // Usar any para manejar ambas estructuras
+  message?: string;
+}
+
+export interface EmailResendResponse {
+  success: boolean;
+  message: string;
+  emailSent?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ReservationService {
   private apiUrl = environment.apiUrl;
-  private readonly PRICE_PER_NIGHT = 200; // Precio fijo en USD por noche
+  private readonly PRICE_PER_NIGHT = 50000; // Precio en pesos colombianos
   
   constructor(private http: HttpClient, private apiService: ApiService) { }
+
+  // ========================================
+  // MÉTODOS EXISTENTES (MANTENIDOS PARA COMPATIBILIDAD)
+  // ========================================
 
   // Obtener todas las habitaciones
   getRooms(): Observable<Room[]> {
@@ -56,7 +98,16 @@ export class ReservationService {
     );
   }
 
-  // Simulación de disponibilidad por fechas
+  // Simulación de fechas ocupadas (mantenida para compatibilidad)
+  private bookedDates: Date[] = [
+    new Date(2025, 4, 28), // 28 de Mayo
+    new Date(2025, 4, 29), // 29 de Mayo
+    new Date(2025, 5, 15), // 15 de Junio
+    new Date(2025, 5, 16), // 16 de Junio
+    new Date(2025, 5, 17), // 17 de Junio
+  ];
+
+  // Simulación de disponibilidad por fechas (mantenida para compatibilidad)
   private generateMockAvailability(startDate: Date, endDate: Date): DateAvailability[] {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
     console.log("Generated days:", days);
@@ -95,47 +146,13 @@ export class ReservationService {
     });
   }
 
-  // Obtener disponibilidad para un mes específico
-  getMonthAvailability(year: number, month: number): Observable<CalendarMonth> {
-    // En un entorno real: return this.http.get<CalendarMonth>(`${this.apiUrl}/availability/${year}/${month}`);
-    
-    const monthStart = startOfMonth(new Date(year, month - 1));
-    const monthEnd = endOfMonth(new Date(year, month - 1));
-    
-    const availability = this.generateMockAvailability(monthStart, monthEnd);
-    
-    const calendarMonth: CalendarMonth = {
-      year: year,
-      month: month,
-      days: availability
-    };
-    
-    console.log("Month availability generated:", calendarMonth);
-    return of(calendarMonth).pipe(delay(500));
-  }
-
-  // Obtener disponibilidad para un rango de fechas
+  // Obtener disponibilidad para un rango de fechas (mantenida)
   getDateRangeAvailability(startDate: Date, endDate: Date): Observable<DateAvailability[]> {
-    // En un entorno real: return this.http.post<DateAvailability[]>(`${this.apiUrl}/availability/range`, { startDate, endDate });
-    
     const availability = this.generateMockAvailability(startDate, endDate);
     return of(availability).pipe(delay(800));
   }
 
-  // Verificar si un rango de fechas está disponible
-  checkDateRangeAvailability(checkIn: Date, checkOut: Date, roomId: number): Observable<{available: boolean, totalPrice: number}> {
-    return this.apiService.post<any>('reservations/check-availability', {
-      checkIn,
-      checkOut,
-      roomId
-    }).pipe(
-      map(response => ({
-        available: response.data.available,
-        totalPrice: response.data.totalPrice
-      }))
-    );
-  }
-
+  // Método original para crear reservas (mantenido para compatibilidad)
   createReservation(reservationData: ReservationData): Observable<Reservation> {
     return this.apiService.post<Reservation>('reservations', {
       checkIn: reservationData.checkIn,
@@ -153,42 +170,11 @@ export class ReservationService {
     );
   }
 
-  // Obtener precio por noche
-  getPricePerNight(): number {
-    return this.PRICE_PER_NIGHT;
-  }
-
-  // Simulamos algunas fechas específicas que están ocupadas
-  private bookedDates: Date[] = [
-    new Date(2025, 4, 28), // 28 de Mayo
-    new Date(2025, 4, 29), // 29 de Mayo
-    new Date(2025, 5, 15), // 15 de Junio
-    new Date(2025, 5, 16), // 16 de Junio
-    new Date(2025, 5, 17), // 17 de Junio
-  ];
-
-  // Método auxiliar para verificar si una fecha específica está disponible
-  isDateAvailable(date: Date): boolean {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    if (isBefore(date, today)) {
-      return false;
-    }
-    
-    return !this.bookedDates.some(bookedDate => isSameDay(bookedDate, date));
-  }
-
-  // Método para obtener las fechas ocupadas (útil para debugging)
-  getBookedDates(): Date[] {
-    return [...this.bookedDates];
-  }
-
-  // Obtener todas las reservas
+  // Obtener todas las reservas (mantenido)
   getReservations(filters?: any): Observable<Reservation[]> {
     return this.apiService.get<Reservation>('reservations', {
       ...filters,
-      populate: ['room'], // Incluir información de la habitación
+      populate: ['room'],
       sort: 'createdAt:desc'
     }).pipe(
       map(response => {
@@ -200,14 +186,14 @@ export class ReservationService {
     );
   }
 
-  // Obtener una reserva específica
+  // Obtener una reserva específica (mantenido)
   getReservation(id: number): Observable<Reservation> {
     return this.apiService.getById<Reservation>('reservations', id).pipe(
       map(response => response.data as Reservation)
     );
   }
 
-  // Actualizar estado de una reserva
+  // Actualizar estado de una reserva (mantenido)
   updateReservationStatus(id: number, status: string): Observable<Reservation> {
     return this.apiService.put<Reservation>('reservations', id, {
       status: status
@@ -216,12 +202,12 @@ export class ReservationService {
     );
   }
 
-  // Cancelar una reserva
+  // Cancelar una reserva (mantenido)
   cancelReservation(id: number): Observable<Reservation> {
     return this.updateReservationStatus(id, 'cancelled');
   }
 
-  // Obtener reservas por habitación
+  // Obtener reservas por habitación (mantenido)
   getReservationsByRoom(roomId: number): Observable<Reservation[]> {
     return this.getReservations({
       filters: {
@@ -234,7 +220,7 @@ export class ReservationService {
     });
   }
 
-  // Obtener reservas por estado
+  // Obtener reservas por estado (mantenido)
   getReservationsByStatus(status: string): Observable<Reservation[]> {
     return this.getReservations({
       filters: {
@@ -245,7 +231,7 @@ export class ReservationService {
     });
   }
 
-  // Obtener reservas por cliente
+  // Obtener reservas por cliente (mantenido)
   getReservationsByCustomer(email: string): Observable<Reservation[]> {
     return this.getReservations({
       filters: {
@@ -254,5 +240,323 @@ export class ReservationService {
         }
       }
     });
+  }
+
+  // Método auxiliar para verificar si una fecha específica está disponible (mantenido)
+  isDateAvailable(date: Date): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (isBefore(date, today)) {
+      return false;
+    }
+    
+    return !this.bookedDates.some(bookedDate => isSameDay(bookedDate, date));
+  }
+
+  // Método para obtener las fechas ocupadas (mantenido)
+  getBookedDates(): Date[] {
+    return [...this.bookedDates];
+  }
+
+  // ========================================
+  // NUEVOS MÉTODOS PARA FUNCIONALIDAD EXTENDIDA
+  // ========================================
+
+  /**
+   * Crear una nueva reserva con la nueva estructura
+   */
+  createReservationNew(reservationData: CreateReservationData): Observable<CreateReservationResponse> {
+    console.log('🚀 Creating reservation with data:', reservationData);
+    
+    // Formatear los datos para que coincidan con el backend
+    const formattedData = {
+      name: reservationData.name,
+      email: reservationData.email,
+      phone: reservationData.phone,
+      checkIn: format(reservationData.checkIn, 'yyyy-MM-dd'),
+      checkOut: format(reservationData.checkOut, 'yyyy-MM-dd'),
+      guests: reservationData.guests,
+      specialRequests: reservationData.specialRequests || '',
+      totalPrice: reservationData.totalPrice,
+      statusReservation: 'confirmed'
+    };
+
+    console.log('📤 Sending formatted data to backend:', formattedData);
+
+    return this.http.post<any>(`${this.apiUrl}/reservations`, { data: formattedData })
+      .pipe(
+        map(response => {
+          console.log('✅ Reservation created successfully:', response);
+          
+          return {
+            success: true,
+            reservation: response.data,
+            confirmationCode: response.data?.confirmationCode,
+            message: 'Reserva creada exitosamente'
+          };
+        }),
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  /**
+   * Verificar disponibilidad de fechas (nueva implementación)
+   */
+  checkDateRangeAvailability(checkIn: Date, checkOut: Date, guests: number): Observable<AvailabilityCheckResponse> {
+    console.log('🔍 Checking availability for:', { checkIn, checkOut, guests });
+    
+    const requestData = {
+      checkIn: format(checkIn, 'yyyy-MM-dd'),
+      checkOut: format(checkOut, 'yyyy-MM-dd'),
+      guests: guests
+    };
+
+    console.log('📤 Sending availability check:', requestData);
+
+    return this.http.post<any>(`${this.apiUrl}/reservations/check-availability`, requestData)
+      .pipe(
+        map(response => {
+          console.log('✅ Availability check response:', response);
+          
+          // Acceder a los datos desde response.data
+          const data = response.data || response;
+          
+          // Calcular precio total si no viene del backend
+          let totalPrice = data.totalPrice || 0;
+          if (!totalPrice && data.available) {
+            const nights = differenceInDays(new Date(data.checkOut), new Date(data.checkIn));
+            totalPrice = nights * this.PRICE_PER_NIGHT;
+          }
+          
+          return {
+            available: data.available === true, // Asegurar que sea boolean
+            totalPrice: totalPrice,
+            message: data.message || (data.available ? 'Fechas disponibles' : 'Fechas no disponibles'),
+            conflictingDates: data.conflictingDates || []
+          };
+        }),
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  /**
+   * Buscar reserva por código de confirmación
+   */
+  findByConfirmationCode(confirmationCode: string): Observable<ReservationLookupResponse> {
+    console.log('🔍 Looking up reservation with code:', confirmationCode);
+    
+    return this.http.get<any>(`${this.apiUrl}/reservations/by-code/${confirmationCode}`)
+      .pipe(
+        map(response => {
+          console.log('✅ Reservation lookup response:', response);
+          
+          if (response.data) {
+            // Convertir fechas string a Date objects
+            const reservation = {
+              ...response.data,
+              checkIn: new Date(response.data.checkIn),
+              checkOut: new Date(response.data.checkOut),
+              createdAt: response.data.createdAt ? new Date(response.data.createdAt) : undefined,
+              updatedAt: response.data.updatedAt ? new Date(response.data.updatedAt) : undefined,
+              emailSentAt: response.data.emailSentAt ? new Date(response.data.emailSentAt) : undefined
+            };
+
+            return {
+              success: true,
+              reservation: reservation,
+              message: 'Reserva encontrada'
+            };
+          } else {
+            return {
+              success: false,
+              message: 'No se encontró ninguna reserva con ese código'
+            };
+          }
+        }),
+        catchError(error => {
+          console.error('❌ Error looking up reservation:', error);
+          
+          if (error.status === 404) {
+            return throwError(() => ({
+              success: false,
+              message: 'No se encontró ninguna reserva con ese código de confirmación'
+            }));
+          }
+          
+          return this.handleError(error);
+        })
+      );
+  }
+
+  /**
+   * Reenviar email de confirmación
+   */
+  sendConfirmationEmail(reservationId: number): Observable<EmailResendResponse> {
+    console.log('📧 Resending confirmation email for reservation:', reservationId);
+    
+    return this.http.post<any>(`${this.apiUrl}/reservations/${reservationId}/send-confirmation`, {})
+      .pipe(
+        map(response => {
+          console.log('✅ Email resend response:', response);
+          
+          return {
+            success: response.success || false,
+            message: response.message || 'Email reenviado correctamente',
+            emailSent: response.emailSent
+          };
+        }),
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  /**
+   * Obtener disponibilidad de un mes para el calendario (actualizada)
+   */
+  getMonthAvailability(year: number, month: number): Observable<CalendarMonth> {
+    console.log('📅 Getting month availability for:', { year, month });
+    
+    // Primero intentar obtener del backend
+    return this.http.get<any>(`${this.apiUrl}/reservations/calendar/${year}/${month}`)
+      .pipe(
+        map(response => {
+          console.log('✅ Month availability response from backend:', response);
+          
+          // La respuesta viene en response.data
+          const calendarData = response.data;
+          
+          if (!calendarData || !calendarData.days) {
+            throw new Error('Invalid calendar data from backend');
+          }
+          
+          // Convertir las fechas string a Date objects y mapear correctamente
+          const days: DateAvailability[] = calendarData.days.map((day: any) => ({
+            date: new Date(day.date),
+            available: day.available === true,
+            availableRooms: day.availableRooms || 0,
+            minPrice: day.minPrice || this.PRICE_PER_NIGHT,
+            maxPrice: day.maxPrice || this.PRICE_PER_NIGHT
+          }));
+
+          const result: CalendarMonth = {
+            year: calendarData.year || year,
+            month: calendarData.month || month,
+            days: days
+          };
+          
+          console.log('✅ Mapped calendar data:', {
+            year: result.year,
+            month: result.month,
+            totalDays: result.days.length,
+            availableDays: result.days.filter(d => d.available).length
+          });
+
+          return result;
+        }),
+        catchError(error => {
+          console.warn('⚠️ Backend calendar endpoint failed, using mock data:', error.status || error.message);
+          
+          // Fallback a datos simulados
+          const monthStart = startOfMonth(new Date(year, month - 1));
+          const monthEnd = endOfMonth(new Date(year, month - 1));
+          
+          const availability = this.generateMockAvailability(monthStart, monthEnd);
+          
+          const calendarMonth: CalendarMonth = {
+            year: year,
+            month: month,
+            days: availability
+          };
+          
+          console.log("✅ Using mock month availability:", {
+            year: calendarMonth.year,
+            month: calendarMonth.month,
+            totalDays: calendarMonth.days.length,
+            availableDays: calendarMonth.days.filter(d => d.available).length
+          });
+          
+          return of(calendarMonth);
+        })
+      );
+  }
+
+  // ========================================
+  // MÉTODOS AUXILIARES Y UTILIDADES
+  // ========================================
+
+  /**
+   * Obtener precio por noche
+   */
+  getPricePerNight(): number {
+    return this.PRICE_PER_NIGHT;
+  }
+
+  /**
+   * Calcular precio total
+   */
+  calculateTotalPrice(checkIn: Date, checkOut: Date): number {
+    const timeDiff = checkOut.getTime() - checkIn.getTime();
+    const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return nights * this.PRICE_PER_NIGHT;
+  }
+
+  /**
+   * Formatear número como moneda colombiana
+   */
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  /**
+   * Generar URL de WhatsApp
+   */
+  generateWhatsAppUrl(reservation: any): string {
+    const whatsappNumber = '573213456789'; // Reemplazar con tu número
+    const message = `Hola! Quiero consultar sobre mi reserva ${reservation.confirmationCode}. 
+Check-in: ${format(reservation.checkIn, 'dd/MM/yyyy')}
+Check-out: ${format(reservation.checkOut, 'dd/MM/yyyy')}
+Huéspedes: ${reservation.guests}`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+  }
+
+  /**
+   * Manejo de errores
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    console.error('❌ API Error:', error);
+    
+    let errorMessage = 'Ocurrió un error inesperado';
+    
+    if (error.error instanceof ErrorEvent) {
+      // Error del lado del cliente
+      errorMessage = `Error de conexión: ${error.error.message}`;
+    } else {
+      // Error del lado del servidor
+      switch (error.status) {
+        case 400:
+          errorMessage = error.error?.error?.message || 'Datos inválidos';
+          break;
+        case 404:
+          errorMessage = 'Recurso no encontrado';
+          break;
+        case 409:
+          errorMessage = error.error?.error?.message || 'Las fechas seleccionadas no están disponibles';
+          break;
+        case 500:
+          errorMessage = 'Error interno del servidor. Por favor, intenta más tarde';
+          break;
+        default:
+          errorMessage = `Error ${error.status}: ${error.error?.error?.message || error.message}`;
+      }
+    }
+    
+    console.error('Final error message:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

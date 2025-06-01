@@ -37,6 +37,11 @@ export const routes: Routes = [
     title: 'Casa de Campo - Reservar'
   },
   { 
+    path: 'mi-reserva', 
+    loadComponent: () => import('./features/reservation-lookup/reservation-lookup').then(m => m.ReservationLookupComponent),
+    title: 'Casa de Campo - Mi Reserva'
+  },
+  { 
     path: '**', 
     redirectTo: '' 
   }
