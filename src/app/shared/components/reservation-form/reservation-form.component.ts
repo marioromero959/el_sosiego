@@ -432,21 +432,24 @@ Puedes buscar tu reserva en cualquier momento usando tu código de confirmación
     return format(this.currentDate, 'MMMM yyyy', { locale: es });
   }
 
-  isDateSelected(date: Date): boolean {
+  isDateSelected(date: string | Date): boolean {
     if (!date || !this.selectedCheckIn) return false;
     
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
     if (this.selectedCheckOut) {
-      return (isSameDay(date, this.selectedCheckIn) || 
-              isSameDay(date, this.selectedCheckOut) ||
-              (isAfter(date, this.selectedCheckIn) && isBefore(date, this.selectedCheckOut)));
+      return (isSameDay(dateObj, this.selectedCheckIn) || 
+              isSameDay(dateObj, this.selectedCheckOut) ||
+              (isAfter(dateObj, this.selectedCheckIn) && isBefore(dateObj, this.selectedCheckOut)));
     }
     
-    return isSameDay(date, this.selectedCheckIn);
+    return isSameDay(dateObj, this.selectedCheckIn);
   }
 
-  isDateInRange(date: Date): boolean {
+  isDateInRange(date: string | Date): boolean {
     if (!date || !this.selectedCheckIn || !this.selectedCheckOut) return false;
-    return isAfter(date, this.selectedCheckIn) && isBefore(date, this.selectedCheckOut);
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return isAfter(dateObj, this.selectedCheckIn) && isBefore(dateObj, this.selectedCheckOut);
   }
 
   // Calcular noches correctamente
