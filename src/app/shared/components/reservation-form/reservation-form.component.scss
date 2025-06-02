@@ -148,6 +148,12 @@
       background-color: rgba(74, 103, 65, 0.2);
       color: var(--primary-color);
     }
+
+    &.padding {
+      background-color: #f8f9fa;
+      cursor: default;
+      pointer-events: none;
+    }
   }
 }
 
@@ -360,6 +366,12 @@
     &.in-range {
       background-color: rgba(74, 103, 65, 0.2);
       color: var(--primary-color);
+    }
+
+    &.padding {
+      background-color: #f8f9fa;
+      cursor: default;
+      pointer-events: none;
     }
   }
 }

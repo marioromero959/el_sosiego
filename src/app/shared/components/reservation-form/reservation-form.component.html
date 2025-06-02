@@ -111,13 +111,16 @@
           <div *ngIf="!calendarLoading" class="calendar-days">
             <div *ngFor="let dayAvailability of getDaysInMonth()" 
                  class="calendar-day" 
-                 [class.available]="dayAvailability.available"
-                 [class.unavailable]="!dayAvailability.available"
+                 [class.available]="dayAvailability.available && !dayAvailability.isPadding"
+                 [class.unavailable]="!dayAvailability.available && !dayAvailability.isPadding"
+                 [class.padding]="dayAvailability.isPadding"
                  [class.selected]="isDateSelected(dayAvailability.date)"
                  [class.in-range]="isDateInRange(dayAvailability.date)"
-                 (click)="selectDate(dayAvailability)">
-              <span class="day-number">{{dayAvailability.date.getDate()}}</span>
-              <span *ngIf="!dayAvailability.available" class="day-unavailable">N/D</span>
+                 (click)="!dayAvailability.isPadding && selectDate(dayAvailability)">
+              <span class="day-number" *ngIf="!dayAvailability.isPadding">
+                {{dayAvailability.date | date:'d'}}
+              </span>
+              <span *ngIf="!dayAvailability.available && !dayAvailability.isPadding" class="day-unavailable">N/D</span>
             </div>
           </div>
         </div>

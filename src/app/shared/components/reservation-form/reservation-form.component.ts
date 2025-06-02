@@ -119,7 +119,7 @@ export class ReservationFormComponent implements OnInit {
 
   // Seleccionar fecha en el calendario
   selectDate(dateAvailability: DateAvailability): void {
-    if (!dateAvailability.available) {
+    if (!dateAvailability.available || !dateAvailability.date) {
       this.showAlert({
         title: 'Fecha No Disponible',
         message: 'Esta fecha no está disponible para reservas. Por favor, selecciona otra fecha.',
@@ -128,7 +128,7 @@ export class ReservationFormComponent implements OnInit {
       return;
     }
 
-    const selectedDate = dateAvailability.date;
+    const selectedDate = new Date(dateAvailability.date);
 
     if (!this.selectedCheckIn || (this.selectedCheckIn && this.selectedCheckOut)) {
       // Primera selección o reiniciar selección
@@ -335,7 +335,97 @@ Puedes buscar tu reserva en cualquier momento usando tu código de confirmación
   // Métodos auxiliares para el calendario
   getDaysInMonth(): DateAvailability[] {
     if (!this.currentMonth) return [];
-    return this.currentMonth.days;
+    
+    // Create dates ensuring they're in the correct timezone
+    const days = this.currentMonth.days.map(day => {
+      // Handle date which can be either string or Date
+      let date: Date;
+      if (typeof day.date === 'string') {
+        // Parse the date string (YYYY-MM-DD) and create a Date object at noon UTC
+        const [year, month, dayOfMonth] = day.date.split('-').map(Number);
+        date = new Date(year, month - 1, dayOfMonth);
+      } else {
+        // If it's already a Date, ensure it's at noon UTC
+        date = new Date(day.date);
+      }
+      
+      return {
+        ...day,
+        date
+      };
+    });
+
+    if (days.length === 0) return [];
+
+    const firstDay = days[0].date;
+    const lastDay = days[days.length - 1].date;
+    
+    console.log('🔍 Debug Calendar:', {
+      totalDays: days.length,
+      firstDay: firstDay.toISOString(),
+      firstDayLocal: firstDay.toString(),
+      firstDayWeekday: firstDay.getDay(),
+      lastDay: lastDay.toISOString(),
+      lastDayLocal: lastDay.toString(),
+      lastDayWeekday: lastDay.getDay()
+    });
+
+    // Get weekday (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    let firstDayOfWeek = firstDay.getDay();
+    // Convert to Monday-Sunday format (0 = Monday, ..., 6 = Sunday)
+    firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    
+    console.log('📅 Padding Calculations:', {
+      firstDayOfWeek,
+      startPaddingNeeded: firstDayOfWeek
+    });
+    
+    // Add padding days at the start to align correctly
+    const startPaddingDays: DateAvailability[] = Array(firstDayOfWeek).fill(null).map(() => ({
+      date: new Date(0), // Use epoch as padding date
+      available: false,
+      availableRooms: 0,
+      minPrice: 0,
+      maxPrice: 0,
+      isPadding: true
+    }));
+    
+    // Calculate days needed to complete required rows
+    const totalCurrentDays = startPaddingDays.length + days.length;
+    const rowsNeeded = Math.ceil(totalCurrentDays / 7);
+    const totalNeededDays = rowsNeeded * 7;
+    const endPaddingCount = totalNeededDays - totalCurrentDays;
+    
+    console.log('📅 End Padding Calculations:', {
+      totalCurrentDays,
+      rowsNeeded,
+      totalNeededDays,
+      endPaddingNeeded: endPaddingCount,
+      willAddDays: endPaddingCount > 0
+    });
+    
+    const endPaddingDays: DateAvailability[] = Array(endPaddingCount).fill(null).map(() => ({
+      date: new Date(0), // Use epoch as padding date
+      available: false,
+      availableRooms: 0,
+      minPrice: 0,
+      maxPrice: 0,
+      isPadding: true
+    }));
+    
+    const finalCalendar = [...startPaddingDays, ...days, ...endPaddingDays];
+    
+    console.log('📊 Final Calendar Structure:', {
+      startPaddingDays: startPaddingDays.length,
+      actualDays: days.length,
+      endPaddingDays: endPaddingDays.length,
+      totalDays: finalCalendar.length,
+      totalRows: Math.ceil(finalCalendar.length / 7),
+      firstDate: firstDay.getDate(),
+      lastDate: lastDay.getDate()
+    });
+
+    return finalCalendar;
   }
 
   getMonthName(): string {
@@ -343,7 +433,7 @@ Puedes buscar tu reserva en cualquier momento usando tu código de confirmación
   }
 
   isDateSelected(date: Date): boolean {
-    if (!this.selectedCheckIn) return false;
+    if (!date || !this.selectedCheckIn) return false;
     
     if (this.selectedCheckOut) {
       return (isSameDay(date, this.selectedCheckIn) || 
@@ -355,7 +445,7 @@ Puedes buscar tu reserva en cualquier momento usando tu código de confirmación
   }
 
   isDateInRange(date: Date): boolean {
-    if (!this.selectedCheckIn || !this.selectedCheckOut) return false;
+    if (!date || !this.selectedCheckIn || !this.selectedCheckOut) return false;
     return isAfter(date, this.selectedCheckIn) && isBefore(date, this.selectedCheckOut);
   }
 
@@ -377,6 +467,7 @@ Puedes buscar tu reserva en cualquier momento usando tu código de confirmación
 
   // Verificar si una fecha está en el mes actual visible
   private isDateInCurrentMonth(date: Date): boolean {
+    if (!date) return false;
     const currentMonthStart = startOfMonth(this.currentDate);
     const currentMonthEnd = endOfMonth(this.currentDate);
     return date >= currentMonthStart && date <= currentMonthEnd;

@@ -431,11 +431,8 @@ export class ReservationService {
           
           // Convertir las fechas string a Date objects y mapear correctamente
           const days: DateAvailability[] = calendarData.days.map((day: any) => ({
-            date: new Date(day.date),
-            available: day.available === true,
-            availableRooms: day.availableRooms || 0,
-            minPrice: day.minPrice || this.PRICE_PER_NIGHT,
-            maxPrice: day.maxPrice || this.PRICE_PER_NIGHT
+            ...day,
+            date: day.date // Keep the date as string, it will be converted in the component
           }));
 
           const result: CalendarMonth = {

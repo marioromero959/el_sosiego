@@ -30,11 +30,12 @@ export interface Reservation {
 }
 
 export interface DateAvailability {
-  date: Date;
+  date: Date | string;
   available: boolean;
   availableRooms: number;
   minPrice: number;
   maxPrice: number;
+  isPadding?: boolean;
 }
 
 export interface CalendarMonth {
