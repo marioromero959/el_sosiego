@@ -10,7 +10,7 @@ import { es } from 'date-fns/locale';
 @Component({
   selector: 'app-reservation-lookup',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
     <div class="reservation-lookup-container">
       <!-- Header -->

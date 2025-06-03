@@ -162,7 +162,7 @@
       </div>
       
       <!-- Step 2: Información personal -->
-      <div *ngIf="showBookingForm && !isSubmitted" class="reservation-step">
+      <div *ngIf="showBookingForm && !isSubmitted && !showPaymentStep" class="reservation-step">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h4>Completa tu reserva</h4>
           <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showBookingForm = false">
@@ -257,7 +257,63 @@
         </div>
       </div>
       
-      <!-- Step 3: Confirmación -->
+      <!-- Step 3: Pago -->
+      <div *ngIf="showPaymentStep && !isSubmitted" class="reservation-step">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4>Proceder al Pago</h4>
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showPaymentStep = false">
+            <i class="fas fa-arrow-left me-2"></i> Volver
+          </button>
+        </div>
+
+        <!-- Resumen de la reserva -->
+        <div class="booking-summary alert alert-light mb-4">
+          <div class="row">
+            <div class="col-md-3">
+              <strong>Llegada</strong><br>
+              {{selectedCheckIn ? formatDate(selectedCheckIn) : ''}}
+            </div>
+            <div class="col-md-3">
+              <strong>Salida</strong><br>
+              {{selectedCheckOut ? formatDate(selectedCheckOut) : ''}}
+            </div>
+            <div class="col-md-3">
+              <strong>Huéspedes</strong><br>
+              {{reservationForm.value.guests}} persona(s)
+            </div>
+            <div class="col-md-3">
+              <strong>Total a Pagar</strong><br>
+              <span class="text-primary fs-5">${{availabilityResult?.totalPrice}} USD</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading de pago -->
+        <div *ngIf="paymentLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Procesando pago...</span>
+          </div>
+          <p class="mt-2">Preparando el pago seguro con Mercado Pago...</p>
+        </div>
+
+        <!-- Información de pago -->
+        <div *ngIf="!paymentLoading" class="payment-info text-center">
+          <h4 class="mb-4">Pago Seguro con Mercado Pago</h4>
+          <p class="lead mb-4">
+            Serás redirigido al checkout seguro de Mercado Pago para completar tu pago.
+          </p>
+          <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i>
+            Tu reserva estará confirmada una vez que el pago sea procesado exitosamente.
+          </div>
+          <button class="btn btn-primary btn-lg" (click)="redirectToPayment()">
+            <i class="fas fa-lock me-2"></i>
+            Proceder al Pago Seguro
+          </button>
+        </div>
+      </div>
+      
+      <!-- Step 4: Confirmación -->
       <div *ngIf="isSubmitted" class="reservation-step text-center">
         <div class="reservation-confirmation">
           <div class="confirmation-icon">

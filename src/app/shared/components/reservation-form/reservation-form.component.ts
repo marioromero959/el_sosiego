@@ -1,12 +1,14 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReservationService, CreateReservationResponse, CreateReservationData } from '../../../core/services/reservation.service';
 import { DateAvailability, CalendarMonth } from '../../../core/models/reservation.model';
 import { AlertModalComponent, AlertModalData } from '../alert-modal/alert-modal.component';
 import { format, addDays, addMonths, startOfMonth, endOfMonth, isSameDay, isBefore, isAfter, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PaymentService, PaymentPreference, CreatePaymentPreferenceData } from '../../../core/services/payment.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-reservation-form',
@@ -48,10 +50,17 @@ export class ReservationFormComponent implements OnInit {
     type: 'info'
   };
   
+  // Add new properties for payment
+  showPaymentStep: boolean = false;
+  paymentPreference: PaymentPreference | null = null;
+  paymentLoading: boolean = false;
+  
   constructor(
     private fb: FormBuilder,
     private reservationService: ReservationService,
-    private router: Router
+    private paymentService: PaymentService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +68,13 @@ export class ReservationFormComponent implements OnInit {
     this.pricePerNight = this.reservationService.getPricePerNight();
     if (!this.simplified) {
       this.loadCurrentMonth();
+      
+      // Verificar si hay un pago pendiente de procesar
+      this.route.queryParams.subscribe(params => {
+        if (params['preference_id'] && params['status']) {
+          this.handlePaymentCallback(params['preference_id'], params['status']);
+        }
+      });
     }
   }
 
@@ -273,7 +289,17 @@ export class ReservationFormComponent implements OnInit {
     });
   }
 
-  // Enviar reserva usando el nuevo método
+  // Método para redirigir al pago
+  redirectToPayment(): void {
+    if (!this.paymentPreference) return;
+
+    const redirectUrl = environment.production 
+      ? this.paymentPreference.initPoint 
+      : this.paymentPreference.sandboxInitPoint;
+    
+    window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=${this.paymentPreference}`;
+  }
+
   submitReservation(): void {
     if (this.reservationForm.invalid || !this.selectedCheckIn || !this.selectedCheckOut) {
       this.markFormGroupTouched(this.reservationForm);
@@ -282,51 +308,87 @@ export class ReservationFormComponent implements OnInit {
     
     this.isLoading = true;
     
-    // Usar la nueva estructura de datos
-    const reservationData: CreateReservationData = {
-      name: this.reservationForm.value.name,
-      email: this.reservationForm.value.email,
-      phone: this.reservationForm.value.phone,
-      checkIn: this.selectedCheckIn,
-      checkOut: this.selectedCheckOut,
-      guests: this.reservationForm.value.guests,
-      specialRequests: this.reservationForm.value.specialRequests || '',
-      totalPrice: this.availabilityResult?.totalPrice || 0
+    // Preparar datos para la preferencia de pago
+    const paymentData: CreatePaymentPreferenceData = {
+      description: `Reserva Casa de Campo - ${this.formatDate(this.selectedCheckIn)} al ${this.formatDate(this.selectedCheckOut)}`,
+      customerEmail: this.reservationForm.value.email,
+      reservationData: {
+        name: this.reservationForm.value.name,
+        email: this.reservationForm.value.email,
+        phone: this.reservationForm.value.phone,
+        checkIn: this.selectedCheckIn,
+        checkOut: this.selectedCheckOut,
+        guests: this.reservationForm.value.guests,
+        specialRequests: this.reservationForm.value.specialRequests || '',
+        totalAmount: this.availabilityResult?.totalPrice || 0
+      }
     };
     
-    console.log('📤 Submitting reservation:', reservationData);
+    console.log('📤 Creating payment preference:', paymentData);
     
-    // Usar el nuevo método para crear reservas
-    this.reservationService.createReservationNew(reservationData)
+    this.paymentService.createPaymentPreference(paymentData)
       .subscribe({
-        next: (result) => {
-          console.log('✅ Reservation created successfully:', result);
-          this.isLoading = false;
-          this.isSubmitted = true;
-          this.createdReservation = result;
-          
-          // Mostrar mensaje de éxito con código de confirmación
-          this.showAlert({
-            title: '🎉 ¡Reserva Confirmada!',
-            message: `Tu reserva ha sido creada exitosamente.
-            
-Código de confirmación: ${result.confirmationCode}
-
-Se ha enviado un email de confirmación a ${reservationData.email}.
-
-Puedes buscar tu reserva en cualquier momento usando tu código de confirmación.`,
-            type: 'success',
-            confirmText: 'Entendido'
-          });
+        next: (preference) => {
+          console.log('✅ Payment preference created:', preference);
+          this.paymentLoading = false;
+          this.paymentPreference = preference;
+          this.showPaymentStep = true;
         },
         error: (error) => {
-          console.error('❌ Error creating reservation:', error);
+          console.error('❌ Error creating payment:', error);
           this.isLoading = false;
           this.showAlert({
-            title: 'Error en la Reserva',
-            message: error.message || 'No pudimos procesar tu reserva. Por favor, intenta de nuevo o contacta nuestro soporte.',
+            title: 'Error en el Pago',
+            message: 'No pudimos procesar el pago. Por favor, intenta de nuevo o contacta nuestro soporte.',
             type: 'error',
             confirmText: 'Reintentar'
+          });
+        }
+      });
+  }
+
+  // Nuevo método para manejar la respuesta del pago
+  private handlePaymentCallback(preferenceId: string, status: string): void {
+    this.isLoading = true;
+    
+    this.paymentService.verifyPaymentStatus(preferenceId)
+      .subscribe({
+        next: (result) => {
+          this.isLoading = false;
+          
+          if (result.status === 'approved' && result.reservationId) {
+            this.isSubmitted = true;
+            this.showAlert({
+              title: '🎉 ¡Reserva Confirmada!',
+              message: `Tu pago ha sido procesado exitosamente y tu reserva ha sido confirmada.
+              
+Se ha enviado un email de confirmación con los detalles de tu reserva.
+
+Código de reserva: ${result.reservationId}`,
+              type: 'success',
+              confirmText: 'Entendido'
+            });
+          } else if (result.status === 'pending') {
+            this.showAlert({
+              title: 'Pago Pendiente',
+              message: 'Tu pago está siendo procesado. Te notificaremos cuando se confirme.',
+              type: 'warning'
+            });
+          } else {
+            this.showAlert({
+              title: 'Error en el Pago',
+              message: result.message || 'El pago no pudo ser procesado. Por favor, intenta de nuevo.',
+              type: 'error'
+            });
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error verifying payment:', error);
+          this.isLoading = false;
+          this.showAlert({
+            title: 'Error de Verificación',
+            message: 'No pudimos verificar el estado del pago. Por favor, contacta a soporte.',
+            type: 'error'
           });
         }
       });
