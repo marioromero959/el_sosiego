@@ -7,8 +7,7 @@ import { DateAvailability, CalendarMonth } from '../../../core/models/reservatio
 import { AlertModalComponent, AlertModalData } from '../alert-modal/alert-modal.component';
 import { format, addDays, addMonths, startOfMonth, endOfMonth, isSameDay, isBefore, isAfter, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { PaymentService, PaymentPreference, CreatePaymentPreferenceData } from '../../../core/services/payment.service';
-import { environment } from '../../../../environments/environment';
+import { PaymentService } from '../../../core/services/payment.service';
 
 @Component({
   selector: 'app-reservation-form',
@@ -50,17 +49,20 @@ export class ReservationFormComponent implements OnInit {
     type: 'info'
   };
   
-  // Add new properties for payment
-  showPaymentStep: boolean = false;
-  paymentPreference: PaymentPreference | null = null;
-  paymentLoading: boolean = false;
-  
+  showDirectPaymentOption: boolean = false;
+  isProcessingDirectPayment: boolean = false;
+  directPaymentError: string | null = null;
+
+  isProcessingPayment: boolean = false;
+  paymentError: string | null = null;
+  paymentSuccess: boolean = false;
+  paymentResult: any = null;
+
   constructor(
     private fb: FormBuilder,
     private reservationService: ReservationService,
     private paymentService: PaymentService,
     private router: Router,
-    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -68,13 +70,6 @@ export class ReservationFormComponent implements OnInit {
     this.pricePerNight = this.reservationService.getPricePerNight();
     if (!this.simplified) {
       this.loadCurrentMonth();
-      
-      // Verificar si hay un pago pendiente de procesar
-      this.route.queryParams.subscribe(params => {
-        if (params['preference_id'] && params['status']) {
-          this.handlePaymentCallback(params['preference_id'], params['status']);
-        }
-      });
     }
   }
 
@@ -289,109 +284,97 @@ export class ReservationFormComponent implements OnInit {
     });
   }
 
-  // Método para redirigir al pago
-  redirectToPayment(): void {
-    if (!this.paymentPreference) return;
 
-    const redirectUrl = environment.production 
-      ? this.paymentPreference.initPoint 
-      : this.paymentPreference.sandboxInitPoint;
-    
-    window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=${this.paymentPreference}`;
-  }
-
-  submitReservation(): void {
+  async submitReservation(): Promise<void> {
     if (this.reservationForm.invalid || !this.selectedCheckIn || !this.selectedCheckOut) {
       this.markFormGroupTouched(this.reservationForm);
       return;
     }
     
-    this.isLoading = true;
-    
-    // Preparar datos para la preferencia de pago
-    const paymentData: CreatePaymentPreferenceData = {
-      description: `Reserva Casa de Campo - ${this.formatDate(this.selectedCheckIn)} al ${this.formatDate(this.selectedCheckOut)}`,
-      customerEmail: this.reservationForm.value.email,
-      reservationData: {
-        name: this.reservationForm.value.name,
-        email: this.reservationForm.value.email,
-        phone: this.reservationForm.value.phone,
-        checkIn: this.selectedCheckIn,
-        checkOut: this.selectedCheckOut,
-        guests: this.reservationForm.value.guests,
-        specialRequests: this.reservationForm.value.specialRequests || '',
-        totalAmount: this.availabilityResult?.totalPrice || 0
-      }
+    // Preparar datos de la reserva
+    const reservationData = {
+      name: this.reservationForm.value.name,
+      email: this.reservationForm.value.email,
+      phone: this.reservationForm.value.phone,
+      checkIn: this.selectedCheckIn,
+      checkOut: this.selectedCheckOut,
+      guests: this.reservationForm.value.guests,
+      specialRequests: this.reservationForm.value.specialRequests || '',
+      totalAmount: this.availabilityResult?.totalPrice || 0
     };
-    
-    console.log('📤 Creating payment preference:', paymentData);
-    
-    this.paymentService.createPaymentPreference(paymentData)
-      .subscribe({
-        next: (preference) => {
-          console.log('✅ Payment preference created:', preference);
-          this.paymentLoading = false;
-          this.paymentPreference = preference;
-          this.showPaymentStep = true;
-        },
-        error: (error) => {
-          console.error('❌ Error creating payment:', error);
-          this.isLoading = false;
-          this.showAlert({
-            title: 'Error en el Pago',
-            message: 'No pudimos procesar el pago. Por favor, intenta de nuevo o contacta nuestro soporte.',
-            type: 'error',
-            confirmText: 'Reintentar'
-          });
-        }
+
+    console.log('🚀 Iniciando pago directo:', reservationData);
+
+    // Verificar que el sistema esté disponible
+    if (!this.paymentService.isDirectPaymentAvailable()) {
+      this.showAlert({
+        title: 'Sistema No Disponible',
+        message: 'El sistema de pago no está disponible. Por favor, recarga la página e intenta nuevamente.',
+        type: 'error'
       });
+      return;
+    }
+
+    this.isProcessingPayment = true;
+    this.paymentError = null;
+
+    try {
+      const result = await this.paymentService.processDirectPayment(reservationData);
+      
+      this.isProcessingPayment = false;
+      this.paymentResult = result;
+      
+      this.handlePaymentResult(result);
+      
+    } catch (error) {
+      console.error('❌ Payment failed:', error);
+      this.isProcessingPayment = false;
+      this.paymentError = 'Error procesando el pago';
+      
+      this.showAlert({
+        title: 'Error en el Pago',
+        message: `No pudimos procesar tu pago: ${this.paymentError}\n\nPor favor, verifica tus datos e intenta nuevamente.`,
+        type: 'error'
+      });
+    }
   }
 
-  // Nuevo método para manejar la respuesta del pago
-  private handlePaymentCallback(preferenceId: string, status: string): void {
-    this.isLoading = true;
-    
-    this.paymentService.verifyPaymentStatus(preferenceId)
-      .subscribe({
-        next: (result) => {
-          this.isLoading = false;
-          
-          if (result.status === 'approved' && result.reservationId) {
-            this.isSubmitted = true;
-            this.showAlert({
-              title: '🎉 ¡Reserva Confirmada!',
-              message: `Tu pago ha sido procesado exitosamente y tu reserva ha sido confirmada.
-              
-Se ha enviado un email de confirmación con los detalles de tu reserva.
+  // ✅ NUEVO método para manejar resultado del pago
+  private handlePaymentResult(result: any): void {
+    switch (result.status) {
+      case 'approved':
+        this.isSubmitted = true;
+        this.paymentSuccess = true;
+        this.showAlert({
+          title: '🎉 ¡Pago Exitoso!',
+          message: `Tu reserva ha sido confirmada exitosamente.\n\nCódigo de confirmación: ${result.confirmationCode}\nID de pago: ${result.id}\n\nSe ha enviado un email con los detalles.`,
+          type: 'success',
+          confirmText: 'Entendido'
+        });
+        break;
+        
+      case 'pending':
+        this.showAlert({
+          title: 'Pago Pendiente',
+          message: `Tu pago está siendo procesado.\n\nID de transacción: ${result.id}\nTe notificaremos cuando se confirme la reserva.`,
+          type: 'warning'
+        });
+        break;
+        
+      case 'rejected':
+        this.showAlert({
+          title: 'Pago Rechazado',
+          message: `Tu pago fue rechazado.\n\nMotivo: ${result.status_detail}\n\nPor favor, verifica los datos de la tarjeta e intenta nuevamente.`,
+          type: 'error'
+        });
+        break;
+    }
+  }
 
-Código de reserva: ${result.reservationId}`,
-              type: 'success',
-              confirmText: 'Entendido'
-            });
-          } else if (result.status === 'pending') {
-            this.showAlert({
-              title: 'Pago Pendiente',
-              message: 'Tu pago está siendo procesado. Te notificaremos cuando se confirme.',
-              type: 'warning'
-            });
-          } else {
-            this.showAlert({
-              title: 'Error en el Pago',
-              message: result.message || 'El pago no pudo ser procesado. Por favor, intenta de nuevo.',
-              type: 'error'
-            });
-          }
-        },
-        error: (error) => {
-          console.error('❌ Error verifying payment:', error);
-          this.isLoading = false;
-          this.showAlert({
-            title: 'Error de Verificación',
-            message: 'No pudimos verificar el estado del pago. Por favor, contacta a soporte.',
-            type: 'error'
-          });
-        }
-      });
+  // ✅ NUEVO método para reintentar pago
+  retryPayment(): void {
+    this.paymentError = null;
+    this.submitReservation();
   }
 
   // Métodos auxiliares para el calendario
@@ -422,25 +405,10 @@ Código de reserva: ${result.reservationId}`,
     const firstDay = days[0].date;
     const lastDay = days[days.length - 1].date;
     
-    console.log('🔍 Debug Calendar:', {
-      totalDays: days.length,
-      firstDay: firstDay.toISOString(),
-      firstDayLocal: firstDay.toString(),
-      firstDayWeekday: firstDay.getDay(),
-      lastDay: lastDay.toISOString(),
-      lastDayLocal: lastDay.toString(),
-      lastDayWeekday: lastDay.getDay()
-    });
-
     // Get weekday (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
     let firstDayOfWeek = firstDay.getDay();
     // Convert to Monday-Sunday format (0 = Monday, ..., 6 = Sunday)
     firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-    
-    console.log('📅 Padding Calculations:', {
-      firstDayOfWeek,
-      startPaddingNeeded: firstDayOfWeek
-    });
     
     // Add padding days at the start to align correctly
     const startPaddingDays: DateAvailability[] = Array(firstDayOfWeek).fill(null).map(() => ({
@@ -458,13 +426,6 @@ Código de reserva: ${result.reservationId}`,
     const totalNeededDays = rowsNeeded * 7;
     const endPaddingCount = totalNeededDays - totalCurrentDays;
     
-    console.log('📅 End Padding Calculations:', {
-      totalCurrentDays,
-      rowsNeeded,
-      totalNeededDays,
-      endPaddingNeeded: endPaddingCount,
-      willAddDays: endPaddingCount > 0
-    });
     
     const endPaddingDays: DateAvailability[] = Array(endPaddingCount).fill(null).map(() => ({
       date: new Date(0), // Use epoch as padding date
@@ -477,15 +438,6 @@ Código de reserva: ${result.reservationId}`,
     
     const finalCalendar = [...startPaddingDays, ...days, ...endPaddingDays];
     
-    console.log('📊 Final Calendar Structure:', {
-      startPaddingDays: startPaddingDays.length,
-      actualDays: days.length,
-      endPaddingDays: endPaddingDays.length,
-      totalDays: finalCalendar.length,
-      totalRows: Math.ceil(finalCalendar.length / 7),
-      firstDate: firstDay.getDate(),
-      lastDate: lastDay.getDate()
-    });
 
     return finalCalendar;
   }
@@ -608,11 +560,43 @@ Código de reserva: ${result.reservationId}`,
     this.showAlertModal = false;
   }
 
+
   onAlertCancelled(): void {
     this.showAlertModal = false;
   }
 
   onAlertClosed(): void {
     this.showAlertModal = false;
+  }
+
+  private handleDirectPaymentResult(result: any): void {
+    switch (result.status) {
+      case 'approved':
+        this.isSubmitted = true;
+        this.showDirectPaymentOption = false;
+        this.showAlert({
+          title: '🎉 ¡Pago Exitoso!',
+          message: `Tu pago ha sido procesado exitosamente.\n\nID de transacción: ${result.id}\nMonto: $${result.transaction_amount}\n\nSe ha enviado un email de confirmación.`,
+          type: 'success',
+          confirmText: 'Entendido'
+        });
+        break;
+        
+      case 'pending':
+        this.showAlert({
+          title: 'Pago Pendiente',
+          message: `Tu pago está siendo procesado.\n\nID de transacción: ${result.id}\nTe notificaremos cuando se confirme.`,
+          type: 'warning'
+        });
+        break;
+        
+      case 'rejected':
+        this.showAlert({
+          title: 'Pago Rechazado',
+          message: `Tu pago fue rechazado.\n\nRazón: ${result.status_detail}\nPor favor, verifica los datos e intenta nuevamente.`,
+          type: 'error'
+        });
+        break;
+    }
   }
 }
