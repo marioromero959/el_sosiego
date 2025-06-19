@@ -84,6 +84,7 @@ export class ReservationFormComponent implements OnInit {
       this.reservationForm.addControl('email', this.fb.control('', [Validators.required, Validators.email]));
       this.reservationForm.addControl('phone', this.fb.control('', [Validators.required, Validators.pattern(/^(\+?57)?[0-9\s-]{10,15}$/)]));
       this.reservationForm.addControl('specialRequests', this.fb.control(''));
+      this.reservationForm.addControl('termsCheck', this.fb.control(false ,[Validators.requiredTrue]));
     }
   }
 
@@ -255,7 +256,7 @@ export class ReservationFormComponent implements OnInit {
     ).subscribe({
       next: (result) => {
         console.log('✅ Availability check result:', result);
-        
+        window.scrollTo({ top: 350, behavior: 'smooth' });
         this.availabilityResult = result;
         this.isLoading = false;
         
@@ -303,23 +304,13 @@ export class ReservationFormComponent implements OnInit {
       totalAmount: this.availabilityResult?.totalPrice || 0
     };
 
-    console.log('🚀 Iniciando pago directo:', reservationData);
-
-    // Verificar que el sistema esté disponible
-    if (!this.paymentService.isDirectPaymentAvailable()) {
-      this.showAlert({
-        title: 'Sistema No Disponible',
-        message: 'El sistema de pago no está disponible. Por favor, recarga la página e intenta nuevamente.',
-        type: 'error'
-      });
-      return;
-    }
+    console.log('🚀 Iniciando pago checkout:', reservationData);
 
     this.isProcessingPayment = true;
     this.paymentError = null;
 
     try {
-      const result = await this.paymentService.processDirectPayment(reservationData);
+      const result = await this.paymentService.processPayment(reservationData);
       
       this.isProcessingPayment = false;
       this.paymentResult = result;
@@ -341,6 +332,8 @@ export class ReservationFormComponent implements OnInit {
 
   // ✅ NUEVO método para manejar resultado del pago
   private handlePaymentResult(result: any): void {
+    console.log("RESULT DEL PAGO", result);
+    
     switch (result.status) {
       case 'approved':
         this.isSubmitted = true;

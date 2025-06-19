@@ -164,7 +164,7 @@
       <!-- Step 2: Información personal -->
       <div *ngIf="showBookingForm && !isSubmitted" class="reservation-step">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4>Completa tu reserva</h4>
+          <h4>Completa tus datos</h4>
           <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showBookingForm = false">
             <i class="fas fa-arrow-left me-2"></i> Cambiar fechas
           </button>
@@ -236,10 +236,13 @@
         </div>
         
         <div class="form-check mb-4">
-          <input class="form-check-input" type="checkbox" id="termsCheck" required>
+          <input class="form-check-input" type="checkbox" formControlName="termsCheck" id="termsCheck" required>
           <label class="form-check-label" for="termsCheck">
             He leído y acepto los <a href="#" target="_blank">términos y condiciones</a> y la <a href="#" target="_blank">política de privacidad</a>.
           </label>
+          <div *ngIf="fc['termsCheck']?.invalid" class="form-error">
+            <small *ngIf="fc['termsCheck']?.errors?.['requiredTrue']" class="text-danger">Debe aceptar los términos para continuar</small>
+          </div>
         </div>
         
         <div class="d-flex justify-content-between align-items-center">
@@ -250,7 +253,8 @@
           <button type="button" class="btn btn-success btn-lg" 
                   (click)="submitReservation()" 
                   [disabled]="isLoading || reservationForm.invalid">
-            <span *ngIf="!isLoading">Confirmar reserva - ${{availabilityResult?.totalPrice}} USD</span>
+            <span *ngIf="!isLoading">Ir a pagar</span>
+            <!-- <span *ngIf="!isLoading">Confirmar reserva - ${{availabilityResult?.totalPrice}} USD</span> -->
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             <span *ngIf="isLoading">Procesando...</span>
           </button>
@@ -259,10 +263,8 @@
       
 <!-- src/app/shared/components/reservation-form/reservation-form.component.html -->
 
-<!-- ✅ REEMPLAZAR Step 3 (Pago) completamente -->
-
       <!-- Step 3: Pago Directo -->
-      <div *ngIf="showBookingForm && !isSubmitted" class="reservation-step">
+      <!-- <div *ngIf="isSubmitted" class="reservation-step">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h4>Confirmar Reserva y Pagar</h4>
           <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showBookingForm = false">
@@ -270,7 +272,6 @@
           </button>
         </div>
 
-        <!-- Resumen de la reserva -->
         <div class="booking-summary alert alert-light mb-4">
           <div class="row">
             <div class="col-md-3">
@@ -292,7 +293,6 @@
           </div>
         </div>
 
-        <!-- Formulario de datos personales (si no está lleno ya) -->
         <div class="row g-3 mb-4" *ngIf="!reservationForm.get('name')?.value">
           <div class="col-md-6">
             <div class="form-floating">
@@ -332,7 +332,6 @@
           </div>
         </div>
 
-        <!-- Información de pago directo -->
         <div class="direct-payment-info mb-4">
           <div class="alert alert-info">
             <h5><i class="fas fa-credit-card me-2"></i>Pago Seguro Directo</h5>
@@ -343,7 +342,7 @@
                 <small>Tarjeta: VISA terminada en 3704</small><br>
                 <small>Titular: APRO</small>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <small><strong>🔒 Seguridad:</strong></small><br>
                 <small>✅ Conexión SSL segura</small><br>
                 <small>✅ Protegido por MercadoPago</small>
@@ -352,9 +351,7 @@
           </div>
         </div>
 
-        <!-- Estado del pago -->
         <div class="payment-status mb-4">
-          <!-- Procesando -->
           <div *ngIf="isProcessingPayment" class="alert alert-warning text-center">
             <div class="spinner-border text-warning mb-3" role="status">
               <span class="visually-hidden">Procesando...</span>
@@ -362,8 +359,6 @@
             <h5>Procesando tu pago...</h5>
             <p class="mb-0">Por favor espera, no cierres esta ventana</p>
           </div>
-
-          <!-- Error -->
           <div *ngIf="paymentError && !isProcessingPayment" class="alert alert-danger text-center">
             <h5><i class="fas fa-exclamation-triangle me-2"></i>Error en el Pago</h5>
             <p class="mb-3">{{paymentError}}</p>
@@ -372,16 +367,12 @@
             </button>
           </div>
         </div>
-
-        <!-- Términos y condiciones -->
         <div class="form-check mb-4">
           <input class="form-check-input" type="checkbox" id="termsCheck" required>
           <label class="form-check-label" for="termsCheck">
             He leído y acepto los <a href="#" target="_blank">términos y condiciones</a> y la <a href="#" target="_blank">política de privacidad</a>.
           </label>
         </div>
-
-        <!-- Botones de acción -->
         <div class="d-flex justify-content-between align-items-center">
           <button type="button" class="btn btn-outline-secondary" (click)="showBookingForm = false">
             <i class="fas fa-arrow-left me-2"></i> Atrás
@@ -400,14 +391,7 @@
             </span>
           </button>
         </div>
-      </div>
-
-<!-- ✅ QUITAR completamente las secciones de:
-     - Step 3: Pago (con CheckoutPro)
-     - showPaymentStep
-     - paymentLoading
-     - redirectToPayment
-     - Sección de pago directo fallback -->
+      </div> -->
 
       <!-- Step 4: Confirmación -->
       <div *ngIf="isSubmitted" class="reservation-step text-center">

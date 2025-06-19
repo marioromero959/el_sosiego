@@ -6,17 +6,11 @@ import { environment } from '../../../environments/environment';
 
 // ✅ Interfaces simplificadas para pago directo
 export interface DirectPaymentData {
-  token: string;
   transaction_amount: number;
   description: string;
-  payment_method_id: string;
   installments: number;
   payer: {
     email: string;
-    identification: {
-      type: string;
-      number: string;
-    };
   };
   reservationData: {
     name: string;
@@ -41,7 +35,6 @@ export interface DirectPaymentResult {
   reservationId?: number;
   confirmationCode?: string;
 }
-
 @Injectable({
   providedIn: 'root'
 })
@@ -49,9 +42,16 @@ export class PaymentService {
   private apiUrl = environment.apiUrl;
   private mp: any = null;
   private isDirectPaymentReady = false;
+  private publicKey:string | undefined;
 
   constructor(private http: HttpClient) {
     this.initDirectPayment();
+    this.loadConfig();
+  }
+
+  async loadConfig(): Promise<void> {
+    const config = await this.http.get<any>(`${this.apiUrl}/payments/config`).toPromise();
+    this.publicKey = config.data.publicKey;
   }
 
   // ✅ Inicializar MercadoPago SDK
@@ -59,7 +59,7 @@ export class PaymentService {
     try {
       await this.loadMercadoPagoSDK();
       
-      this.mp = new (window as any).MercadoPago(environment.publicKey, {
+      this.mp = new (window as any).MercadoPago(this.publicKey, {
         locale: 'es-AR'
       });
       
@@ -86,36 +86,21 @@ export class PaymentService {
   }
 
   // ✅ Método principal de pago directo
-  async processDirectPayment(reservationData: DirectPaymentData['reservationData']): Promise<DirectPaymentResult> {
-    if (!this.isDirectPaymentReady) {
-      throw new Error('Sistema de pago no inicializado');
-    }
-
+  async processPayment(reservationData: DirectPaymentData['reservationData']): Promise<DirectPaymentResult> {
     try {
-      // 1. Crear token de tarjeta de prueba
-      const cardToken = await this.createTestCardToken();
-
       // 2. Preparar datos del pago
       const paymentData: DirectPaymentData = {
-        token: cardToken.id,
         transaction_amount: reservationData.totalAmount,
         description: `Reserva Casa de Campo - ${reservationData.name}`,
-        payment_method_id: 'visa',
         installments: 1,
         payer: {
           email: reservationData.email,
-          identification: {
-            type: 'DNI',
-            number: '12345678'
-          }
         },
         reservationData
       };
 
-      console.log('💳 Procesando pago directo...');
-
       // 3. Enviar al backend
-      const result = await this.http.post<DirectPaymentResult>(`${this.apiUrl}/payments/direct-payment`, paymentData).toPromise();
+      const result = await this.http.post<DirectPaymentResult>(`${this.apiUrl}/payments/payment`, paymentData).toPromise();
       
       console.log('✅ Pago procesado:', result);
       return result!;
@@ -126,34 +111,6 @@ export class PaymentService {
     }
   }
 
-  // ✅ Crear token de tarjeta de prueba
-  private async createTestCardToken(): Promise<any> {
-    try {
-      return await this.mp.createCardToken({
-        cardNumber: '4509953566233704',
-        securityCode: '123',
-        expirationMonth: '11',
-        expirationYear: '25',
-        cardholder: {
-          name: 'APRO',
-          identification: {
-            type: 'DNI',
-            number: '12345678'
-          }
-        }
-      });
-    } catch (error) {
-      console.error('❌ Error creating card token:', error);
-      throw new Error('Error al crear token de tarjeta');
-    }
-  }
-
-  // ✅ Verificar si está disponible
-  isDirectPaymentAvailable(): boolean {
-    return this.isDirectPaymentReady;
-  }
-
-  // ✅ Método legacy para compatibilidad (si algo lo usa)
   verifyPaymentStatus(preferenceId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/payments/verify/${preferenceId}`);
   }
