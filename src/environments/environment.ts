@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:1337/api',
-  strapiUrl: 'http://localhost:1337',
-  publicKey: 'APP_USR-2666d942-a482-4785-8e21-7f1958790761',
+  apiUrl: 'https://el-sosiego-back.onrender.com/api',
+  strapiUrl: 'https://el-sosiego-back.onrender.com',
+  publicKey: 'APP_USR-963870a8-6d1f-44ef-a5cc-0fb5bdeb36f8',
 };

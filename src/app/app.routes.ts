@@ -42,6 +42,21 @@ export const routes: Routes = [
     title: 'Casa de Campo - Mi Reserva'
   },
   { 
+    path: 'reserva-exitosa', 
+    loadComponent: () => import('./features/payment-success/payment-success').then(m => m.PaymentSuccessComponent),
+    title: 'Casa de Campo - Reserva Confirmada'
+  },
+  { 
+    path: 'reserva-fallida', 
+    loadComponent: () => import('./features/payment-failure/payment-failure').then(m => m.PaymentFailureComponent),
+    title: 'Casa de Campo - Error en Reserva'
+  },
+  { 
+    path: 'reserva-pendiente', 
+    loadComponent: () => import('./features/payment-success/payment-success').then(m => m.PaymentSuccessComponent),
+    title: 'Casa de Campo - Reserva Pendiente'
+  },
+  { 
     path: '**', 
     redirectTo: '' 
   }

@@ -4,14 +4,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-// ✅ Interfaces simplificadas para pago directo
-export interface DirectPaymentData {
+// ✅ Interfaces para Checkout Pro
+export interface CheckoutProData {
   transaction_amount: number;
   description: string;
-  installments: number;
-  payer: {
-    email: string;
-  };
   reservationData: {
     name: string;
     email: string;
@@ -24,52 +20,67 @@ export interface DirectPaymentData {
   };
 }
 
-export interface DirectPaymentResult {
-  id: number;
-  status: 'approved' | 'pending' | 'rejected';
-  status_detail: string;
-  transaction_amount: number;
-  description: string;
-  payment_method_id: string;
-  date_created: string;
+export interface CheckoutProResult {
+  preferenceId: string;
+  initPoint: string;
+  sandboxInitPoint: string;
+  reservationId: number;
+  tempId: string;
+  status: string;
+}
+
+export interface PaymentVerificationResult {
+  paymentId: number;
+  status: 'pending' | 'approved' | 'rejected';
   reservationId?: number;
   confirmationCode?: string;
+  paymentStatus?: string;
+  statusReservation?: string;
 }
+
 @Injectable({
   providedIn: 'root'
 })
 export class PaymentService {
   private apiUrl = environment.apiUrl;
   private mp: any = null;
-  private isDirectPaymentReady = false;
-  private publicKey:string | undefined;
+  private isInitialized = false;
+  private publicKey: string | undefined;
 
   constructor(private http: HttpClient) {
-    this.initDirectPayment();
-    this.loadConfig();
+    this.initializeService();
   }
 
-  async loadConfig(): Promise<void> {
-    const config = await this.http.get<any>(`${this.apiUrl}/payments/config`).toPromise();
-    this.publicKey = config.data.publicKey;
-  }
-
-  // ✅ Inicializar MercadoPago SDK
-  private async initDirectPayment(): Promise<void> {
+  // ✅ Inicializar servicio y cargar configuración
+  private async initializeService(): Promise<void> {
     try {
+      await this.loadConfig();
       await this.loadMercadoPagoSDK();
       
-      this.mp = new (window as any).MercadoPago(this.publicKey, {
-        locale: 'es-AR'
-      });
-      
-      this.isDirectPaymentReady = true;
-      console.log('✅ Direct Payment initialized');
+      if (this.publicKey) {
+        this.mp = new (window as any).MercadoPago(this.publicKey, {
+          locale: 'es-AR'
+        });
+        this.isInitialized = true;
+        console.log('✅ PaymentService initialized with Checkout Pro');
+      }
     } catch (error) {
-      console.error('❌ Error initializing Direct Payment:', error);
+      console.error('❌ Error initializing PaymentService:', error);
     }
   }
 
+  // ✅ Cargar configuración desde el backend
+  async loadConfig(): Promise<void> {
+    try {
+      const config = await this.http.get<any>(`${this.apiUrl}/payments/config`).toPromise();
+      this.publicKey = config.data.publicKey;
+    } catch (error) {
+      console.error('Error loading config:', error);
+      throw error;
+    }
+  }
+
+  // ✅ Cargar SDK de MercadoPago
   private loadMercadoPagoSDK(): Promise<void> {
     return new Promise((resolve, reject) => {
       if ((window as any).MercadoPago) {
@@ -85,33 +96,109 @@ export class PaymentService {
     });
   }
 
-  // ✅ Método principal de pago directo
-  async processPayment(reservationData: DirectPaymentData['reservationData']): Promise<DirectPaymentResult> {
+  // ✅ NUEVO: Método principal para Checkout Pro
+  async processPayment(reservationData: CheckoutProData['reservationData']): Promise<CheckoutProResult> {
     try {
-      // 2. Preparar datos del pago
-      const paymentData: DirectPaymentData = {
+      console.log('🚀 Iniciando Checkout Pro:', reservationData);
+
+      // Verificar que el servicio esté inicializado
+      if (!this.isInitialized) {
+        await this.initializeService();
+      }
+
+      // Preparar datos para la preferencia
+      const checkoutData: CheckoutProData = {
         transaction_amount: reservationData.totalAmount,
-        description: `Reserva Casa de Campo - ${reservationData.name}`,
-        installments: 1,
-        payer: {
-          email: reservationData.email,
-        },
+        description: `Reserva Casa de Campo El Sosiego - ${reservationData.name}`,
         reservationData
       };
 
-      // 3. Enviar al backend
-      const result = await this.http.post<DirectPaymentResult>(`${this.apiUrl}/payments/payment`, paymentData).toPromise();
-      
-      console.log('✅ Pago procesado:', result);
-      return result!;
+      // Crear preferencia en el backend
+      const result = await this.http.post<{data: CheckoutProResult}>(
+        `${this.apiUrl}/payments/create-preference`, 
+        checkoutData
+      ).toPromise();
+
+      if (!result?.data) {
+        throw new Error('No se pudo crear la preferencia de pago');
+      }
+
+      console.log('✅ Checkout Pro preference created:', result.data);
+
+      // Redirigir automáticamente a MercadoPago
+      this.redirectToCheckout(result.data.initPoint);
+
+      return result.data;
 
     } catch (error) {
-      console.error('❌ Error processing direct payment:', error);
-      throw new Error('Error al procesar el pago');
+      console.error('❌ Error processing Checkout Pro:', error);
+      throw new Error('Error al procesar el pago: ' + (error as any).message);
     }
   }
 
-  verifyPaymentStatus(preferenceId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/payments/verify/${preferenceId}`);
+  // ✅ Redirigir a Checkout Pro
+  private redirectToCheckout(initPoint: string): void {
+    console.log('🔄 Redirecting to Checkout Pro:', initPoint);
+    window.location.href = initPoint;
+  }
+
+  // ✅ Verificar estado del pago (para usar en páginas de retorno)
+  verifyPaymentStatus(preferenceId: string): Observable<{data: PaymentVerificationResult}> {
+    return this.http.get<{data: PaymentVerificationResult}>(
+      `${this.apiUrl}/payments/verify/${preferenceId}`
+    );
+  }
+
+  // ✅ Obtener estado de reserva
+  getReservationStatus(confirmationCode: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reservations/status/${confirmationCode}`);
+  }
+
+  // ✅ NUEVO: Abrir Checkout Pro en modal (opcional)
+  async openCheckoutModal(preferenceId: string): Promise<void> {
+    try {
+      if (!this.isInitialized) {
+        await this.initializeService();
+      }
+
+      const checkout = this.mp.checkout({
+        preference: {
+          id: preferenceId
+        },
+        autoOpen: true, // Abrir automáticamente
+      });
+
+      console.log('🔄 Checkout modal opened');
+      
+    } catch (error) {
+      console.error('❌ Error opening checkout modal:', error);
+      throw error;
+    }
+  }
+
+  // ✅ NUEVO: Manejar parámetros de retorno de URL
+  handleReturnFromCheckout(): {status: string, preferenceId?: string, paymentId?: string} | null {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    const status = urlParams.get('collection_status') || urlParams.get('status');
+    const preferenceId = urlParams.get('preference_id');
+    const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id');
+    
+    if (status) {
+      return {
+        status,
+        preferenceId: preferenceId || undefined,
+        paymentId: paymentId || undefined
+      };
+    }
+    
+    return null;
+  }
+
+  // ✅ Limpiar parámetros de URL después del procesamiento
+  cleanUrlParams(): void {
+    const url = new URL(window.location.href);
+    url.search = '';
+    window.history.replaceState({}, document.title, url.toString());
   }
 }

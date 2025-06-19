@@ -48,21 +48,19 @@ export class ReservationFormComponent implements OnInit {
     message: '',
     type: 'info'
   };
-  
-  showDirectPaymentOption: boolean = false;
-  isProcessingDirectPayment: boolean = false;
-  directPaymentError: string | null = null;
 
-  isProcessingPayment: boolean = false;
-  paymentError: string | null = null;
-  paymentSuccess: boolean = false;
-  paymentResult: any = null;
+  // ✅ NUEVO: Variables para Checkout Pro
+  isProcessingCheckout: boolean = false;
+  checkoutError: string | null = null;
+  checkoutSuccess: boolean = false;
+  checkoutResult: any = null;
 
   constructor(
     private fb: FormBuilder,
     private reservationService: ReservationService,
     private paymentService: PaymentService,
     private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +69,9 @@ export class ReservationFormComponent implements OnInit {
     if (!this.simplified) {
       this.loadCurrentMonth();
     }
+    
+    // ✅ NUEVO: Manejar retorno desde Checkout Pro
+    this.handleCheckoutReturn();
   }
 
   initForm(): void {
@@ -86,6 +87,80 @@ export class ReservationFormComponent implements OnInit {
       this.reservationForm.addControl('specialRequests', this.fb.control(''));
       this.reservationForm.addControl('termsCheck', this.fb.control(false ,[Validators.requiredTrue]));
     }
+  }
+
+  // ✅ NUEVO: Manejar retorno desde Checkout Pro
+  private handleCheckoutReturn(): void {
+    const returnData = this.paymentService.handleReturnFromCheckout();
+    
+    if (returnData) {
+      console.log('🔄 Handling return from Checkout Pro:', returnData);
+      
+      // Verificar el estado del pago
+      if (returnData.preferenceId) {
+        this.verifyPaymentResult(returnData.preferenceId);
+      }
+      
+      // Limpiar parámetros de URL
+      this.paymentService.cleanUrlParams();
+    }
+  }
+
+  // ✅ NUEVO: Verificar resultado del pago
+  private verifyPaymentResult(preferenceId: string): void {
+    this.paymentService.verifyPaymentStatus(preferenceId).subscribe({
+      next: (result) => {
+        console.log('✅ Payment verification result:', result);
+        
+        if (result.data.status === 'approved') {
+          this.handleSuccessfulPayment(result.data);
+        } else if (result.data.status === 'pending') {
+          this.handlePendingPayment(result.data);
+        } else {
+          this.handleFailedPayment(result.data);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error verifying payment:', error);
+        this.showAlert({
+          title: 'Error de Verificación',
+          message: 'No pudimos verificar el estado de tu pago. Por favor, contacta al soporte.',
+          type: 'error'
+        });
+      }
+    });
+  }
+
+  // ✅ NUEVO: Manejar pago exitoso
+  private handleSuccessfulPayment(paymentData: any): void {
+    this.isSubmitted = true;
+    this.checkoutSuccess = true;
+    this.checkoutResult = paymentData;
+    
+    this.showAlert({
+      title: '🎉 ¡Pago Exitoso!',
+      message: `Tu reserva ha sido confirmada exitosamente.\\n\\nCódigo de confirmación: ${paymentData.confirmationCode}\\nID de reserva: ${paymentData.reservationId}\\n\\nSe ha enviado un email con los detalles.`,
+      type: 'success',
+      confirmText: 'Entendido'
+    });
+  }
+
+  // ✅ NUEVO: Manejar pago pendiente
+  private handlePendingPayment(paymentData: any): void {
+    this.showAlert({
+      title: 'Pago Pendiente',
+      message: `Tu pago está siendo procesado.\\n\\nID de reserva: ${paymentData.reservationId}\\nTe notificaremos cuando se confirme la reserva.`,
+      type: 'warning'
+    });
+  }
+
+  // ✅ NUEVO: Manejar pago fallido
+  private handleFailedPayment(paymentData: any): void {
+    this.showAlert({
+      title: 'Pago No Completado',
+      message: `Tu pago no pudo ser procesado.\\n\\nPuedes intentar nuevamente o contactar al soporte si el problema persiste.`,
+      type: 'error'
+    });
   }
 
   // Cargar disponibilidad del mes actual
@@ -285,7 +360,7 @@ export class ReservationFormComponent implements OnInit {
     });
   }
 
-
+  // ✅ NUEVO: Procesar reserva con Checkout Pro
   async submitReservation(): Promise<void> {
     if (this.reservationForm.invalid || !this.selectedCheckIn || !this.selectedCheckOut) {
       this.markFormGroupTouched(this.reservationForm);
@@ -304,69 +379,34 @@ export class ReservationFormComponent implements OnInit {
       totalAmount: this.availabilityResult?.totalPrice || 0
     };
 
-    console.log('🚀 Iniciando pago checkout:', reservationData);
+    console.log('🚀 Iniciando Checkout Pro:', reservationData);
 
-    this.isProcessingPayment = true;
-    this.paymentError = null;
+    this.isProcessingCheckout = true;
+    this.checkoutError = null;
 
     try {
+      // Procesar con Checkout Pro (redirige automáticamente)
       const result = await this.paymentService.processPayment(reservationData);
       
-      this.isProcessingPayment = false;
-      this.paymentResult = result;
-      
-      this.handlePaymentResult(result);
+      // Este código normalmente no se ejecutará porque hay redirección
+      console.log('✅ Checkout Pro initiated:', result);
       
     } catch (error) {
-      console.error('❌ Payment failed:', error);
-      this.isProcessingPayment = false;
-      this.paymentError = 'Error procesando el pago';
+      console.error('❌ Checkout Pro failed:', error);
+      this.isProcessingCheckout = false;
+      this.checkoutError = 'Error al iniciar el proceso de pago';
       
       this.showAlert({
         title: 'Error en el Pago',
-        message: `No pudimos procesar tu pago: ${this.paymentError}\n\nPor favor, verifica tus datos e intenta nuevamente.`,
+        message: `No pudimos iniciar el proceso de pago: ${this.checkoutError}\\n\\nPor favor, verifica tus datos e intenta nuevamente.`,
         type: 'error'
       });
     }
   }
 
-  // ✅ NUEVO método para manejar resultado del pago
-  private handlePaymentResult(result: any): void {
-    console.log("RESULT DEL PAGO", result);
-    
-    switch (result.status) {
-      case 'approved':
-        this.isSubmitted = true;
-        this.paymentSuccess = true;
-        this.showAlert({
-          title: '🎉 ¡Pago Exitoso!',
-          message: `Tu reserva ha sido confirmada exitosamente.\n\nCódigo de confirmación: ${result.confirmationCode}\nID de pago: ${result.id}\n\nSe ha enviado un email con los detalles.`,
-          type: 'success',
-          confirmText: 'Entendido'
-        });
-        break;
-        
-      case 'pending':
-        this.showAlert({
-          title: 'Pago Pendiente',
-          message: `Tu pago está siendo procesado.\n\nID de transacción: ${result.id}\nTe notificaremos cuando se confirme la reserva.`,
-          type: 'warning'
-        });
-        break;
-        
-      case 'rejected':
-        this.showAlert({
-          title: 'Pago Rechazado',
-          message: `Tu pago fue rechazado.\n\nMotivo: ${result.status_detail}\n\nPor favor, verifica los datos de la tarjeta e intenta nuevamente.`,
-          type: 'error'
-        });
-        break;
-    }
-  }
-
-  // ✅ NUEVO método para reintentar pago
-  retryPayment(): void {
-    this.paymentError = null;
+  // ✅ NUEVO: Reintentar checkout
+  retryCheckout(): void {
+    this.checkoutError = null;
     this.submitReservation();
   }
 
@@ -491,6 +531,8 @@ export class ReservationFormComponent implements OnInit {
     this.selectedCheckOut = null;
     this.availabilityResult = null;
     this.createdReservation = null;
+    this.checkoutResult = null;
+    this.checkoutSuccess = false;
     this.initForm();
   }
 
@@ -553,43 +595,11 @@ export class ReservationFormComponent implements OnInit {
     this.showAlertModal = false;
   }
 
-
   onAlertCancelled(): void {
     this.showAlertModal = false;
   }
 
   onAlertClosed(): void {
     this.showAlertModal = false;
-  }
-
-  private handleDirectPaymentResult(result: any): void {
-    switch (result.status) {
-      case 'approved':
-        this.isSubmitted = true;
-        this.showDirectPaymentOption = false;
-        this.showAlert({
-          title: '🎉 ¡Pago Exitoso!',
-          message: `Tu pago ha sido procesado exitosamente.\n\nID de transacción: ${result.id}\nMonto: $${result.transaction_amount}\n\nSe ha enviado un email de confirmación.`,
-          type: 'success',
-          confirmText: 'Entendido'
-        });
-        break;
-        
-      case 'pending':
-        this.showAlert({
-          title: 'Pago Pendiente',
-          message: `Tu pago está siendo procesado.\n\nID de transacción: ${result.id}\nTe notificaremos cuando se confirme.`,
-          type: 'warning'
-        });
-        break;
-        
-      case 'rejected':
-        this.showAlert({
-          title: 'Pago Rechazado',
-          message: `Tu pago fue rechazado.\n\nRazón: ${result.status_detail}\nPor favor, verifica los datos e intenta nuevamente.`,
-          type: 'error'
-        });
-        break;
-    }
   }
 }
