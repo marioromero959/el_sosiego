@@ -50,7 +50,7 @@ export interface EmailResendResponse {
 })
 export class ReservationService {
   private apiUrl = environment.apiUrl;
-  private readonly PRICE_PER_NIGHT = 200; // Precio en pesos colombianos
+  private readonly PRICE_PER_NIGHT = 2; // Precio en usd
   
   constructor(private http: HttpClient, private apiService: ApiService) { }
 
