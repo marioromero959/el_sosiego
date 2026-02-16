@@ -29,13 +29,22 @@
     <div *ngIf="!simplified">
       <!-- Step 1: Selección de huéspedes y calendario -->
       <div *ngIf="!showBookingForm && !isSubmitted" class="reservation-step">
-        <h4 class="mb-4">Selecciona tus fechas</h4>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="mb-0">Selecciona tus fechas</h4>
+          <div *ngIf="exchangeRate > 0" class="badge bg-info text-dark">
+            <i class="fas fa-chart-line me-1"></i>
+            Cotización: 1 USD = ${{exchangeRate.toLocaleString('es-AR')}} ARS
+          </div>
+        </div>
         
         <!-- Precio información -->
         <div class="price-info alert alert-light mb-4">
           <div class="text-center">
             <h5 class="mb-2">Precio por noche: <span class="text-primary">${{pricePerNight}} USD</span></h5>
-            <small class="text-muted">Todos los precios están en dólares estadounidenses</small>
+            <p class="mb-0" *ngIf="exchangeRate > 0">
+              <small class="text-muted">Equivalente: ${{(pricePerNight * exchangeRate).toLocaleString('es-AR')}} ARS</small><br>
+              <small class="text-muted">El pago se realiza en pesos argentinos (ARS) a la cotización del día</small>
+            </p>
           </div>
         </div>
         
@@ -67,7 +76,9 @@
                 <strong>Salida:</strong> {{formatDate(selectedCheckOut)}}
               </div>
               <div class="col-md-4" *ngIf="selectedCheckOut && availabilityResult">
-                <strong>{{calculateNights()}} noche(s) - Total: ${{availabilityResult.totalPrice}} USD</strong>
+                <strong>{{calculateNights()}} noche(s)</strong><br>
+                <strong class="text-primary">${{availabilityResult.totalPrice}} USD</strong>
+                <span *ngIf="priceInfo"> (${{priceInfo.amountARS.toLocaleString('es-AR')}} ARS)</span>
               </div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary mt-2" (click)="resetDateSelection()">
@@ -188,6 +199,7 @@
             <div class="col-md-3">
               <strong>Total</strong><br>
               <span class="text-primary fs-5">${{availabilityResult?.totalPrice}} USD</span>
+              <br><small *ngIf="priceInfo" class="text-muted">${{priceInfo.amountARS.toLocaleString('es-AR')}} ARS</small>
             </div>
           </div>
         </div>
@@ -289,6 +301,7 @@
             <div class="col-md-3">
               <strong>Total a Pagar</strong><br>
               <span class="text-primary fs-5">${{availabilityResult?.totalPrice}} USD</span>
+              <br><small *ngIf="priceInfo" class="text-muted">${{priceInfo.amountARS.toLocaleString('es-AR')}} ARS</small>
             </div>
           </div>
         </div>
@@ -383,7 +396,8 @@
                   [disabled]="isProcessingPayment || reservationForm.invalid || paymentError">
             <span *ngIf="!isProcessingPayment">
               <i class="fas fa-lock me-2"></i>
-              Pagar ${{availabilityResult?.totalPrice}} USD
+              Pagar <span *ngIf="priceInfo">${{priceInfo.amountARS.toLocaleString('es-AR')}} ARS</span>
+              <small class="d-block" *ngIf="priceInfo">(${{availabilityResult?.totalPrice}} USD)</small>
             </span>
             <span *ngIf="isProcessingPayment">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -429,8 +443,11 @@
               
               <div class="col-md-6">
                 <div class="detail-item">
-                  <span class="detail-label">Total</span>
-                  <span class="detail-value">${{availabilityResult?.totalPrice}} USD</span>
+                  <span class="detail-label">Total Pagado</span>
+                  <span class="detail-value">
+                    <span *ngIf="priceInfo">${{priceInfo.amountARS.toLocaleString('es-AR')}} ARS</span>
+                    <br><small class="text-muted">${{availabilityResult?.totalPrice}} USD</small>
+                  </span>
                 </div>
               </div>
             </div>

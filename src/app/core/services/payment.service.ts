@@ -3,10 +3,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CurrencyService } from './currency.service';
 
 // ✅ Interfaces para Checkout Pro
 export interface CheckoutProData {
   transaction_amount: number;
+  transaction_amount_ars: number;
+  exchange_rate: number;
   description: string;
   reservationData: {
     name: string;
@@ -17,6 +20,8 @@ export interface CheckoutProData {
     guests: number;
     specialRequests?: string;
     totalAmount: number;
+    totalAmountARS: number;
+    exchangeRate: number;
   };
 }
 
@@ -47,7 +52,10 @@ export class PaymentService {
   private isInitialized = false;
   private publicKey: string | undefined;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private currencyService: CurrencyService
+  ) {
     this.initializeService();
   }
 
@@ -106,12 +114,29 @@ export class PaymentService {
         await this.initializeService();
       }
 
-      // Preparar datos para la preferencia
+      // Los valores ya vienen calculados desde el formulario
+      console.log('💱 Datos de pago recibidos:', {
+        usd: reservationData.totalAmount,
+        ars: reservationData.totalAmountARS,
+        rate: reservationData.exchangeRate
+      });
+
+      // Preparar datos para la preferencia con monto en ARS
+      // IMPORTANTE: Sobrescribir totalAmount con el valor en ARS para que el backend lo use
       const checkoutData: CheckoutProData = {
-        transaction_amount: reservationData.totalAmount,
+        transaction_amount: reservationData.totalAmountARS, // ARS (para MercadoPago)
+        transaction_amount_ars: reservationData.totalAmountARS, // ARS (para referencia)
+        exchange_rate: reservationData.exchangeRate,
         description: `Reserva Casa de Campo El Sosiego - ${reservationData.name}`,
-        reservationData
+        reservationData: {
+          ...reservationData,
+          totalAmount: reservationData.totalAmountARS // ⚠️ CAMBIO: enviar ARS como totalAmount
+        }
       };
+
+      console.log('📤 Enviando al backend:', checkoutData);
+      console.log('📤 Transaction amount (debe ser ARS):', checkoutData.transaction_amount);
+      console.log('📤 ReservationData.totalAmount (debe ser ARS):', checkoutData.reservationData.totalAmount);
 
       // Crear preferencia en el backend
       const result = await this.http.post<{data: CheckoutProResult}>(

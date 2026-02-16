@@ -8,6 +8,7 @@ import { AlertModalComponent, AlertModalData } from '../alert-modal/alert-modal.
 import { format, addDays, addMonths, startOfMonth, endOfMonth, isSameDay, isBefore, isAfter, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { PaymentService } from '../../../core/services/payment.service';
+import { CurrencyService, PriceInfo } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-reservation-form',
@@ -41,6 +42,10 @@ export class ReservationFormComponent implements OnInit {
   // Precio por noche
   pricePerNight: number = 0;
   
+  // ✅ NUEVO: Variables para conversión de moneda
+  priceInfo: PriceInfo | null = null;
+  exchangeRate: number = 0;
+  
   // Variables para el modal de alerta
   showAlertModal: boolean = false;
   alertModalData: AlertModalData = {
@@ -59,6 +64,7 @@ export class ReservationFormComponent implements OnInit {
     private fb: FormBuilder,
     private reservationService: ReservationService,
     private paymentService: PaymentService,
+    private currencyService: CurrencyService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -66,6 +72,13 @@ export class ReservationFormComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.pricePerNight = this.reservationService.getPricePerNight();
+    
+    // ✅ NUEVO: Obtener tasa de cambio
+    this.currencyService.getExchangeRate().subscribe(rate => {
+      this.exchangeRate = rate.ars;
+      console.log('💱 Tasa de cambio cargada:', this.exchangeRate);
+    });
+    
     if (!this.simplified) {
       this.loadCurrentMonth();
     }
@@ -309,10 +322,19 @@ export class ReservationFormComponent implements OnInit {
       const nights = this.calculateNights();
       const totalPrice = nights * this.pricePerNight;
       
+      // ✅ NUEVO: Calcular conversión a ARS
+      this.priceInfo = this.currencyService.getPriceInfo(totalPrice);
+      
       this.availabilityResult = {
         available: true,
         totalPrice: totalPrice
       };
+      
+      console.log('💰 Precio calculado:', {
+        usd: totalPrice,
+        ars: this.priceInfo.amountARS,
+        rate: this.priceInfo.exchangeRate
+      });
     }
   }
 
@@ -367,6 +389,17 @@ export class ReservationFormComponent implements OnInit {
       return;
     }
     
+    // Asegurar que tenemos la información de precio actualizada
+    if (!this.priceInfo) {
+      console.warn('⚠️ priceInfo no existe, calculando ahora...');
+      this.priceInfo = this.currencyService.getPriceInfo(this.availabilityResult?.totalPrice || 0);
+    }
+    
+    console.log('💰 PriceInfo antes de enviar:', this.priceInfo);
+    console.log('💵 Total USD:', this.availabilityResult?.totalPrice);
+    console.log('💵 Total ARS:', this.priceInfo.amountARS);
+    console.log('💱 Exchange Rate:', this.priceInfo.exchangeRate);
+    
     // Preparar datos de la reserva
     const reservationData = {
       name: this.reservationForm.value.name,
@@ -376,10 +409,12 @@ export class ReservationFormComponent implements OnInit {
       checkOut: this.selectedCheckOut,
       guests: this.reservationForm.value.guests,
       specialRequests: this.reservationForm.value.specialRequests || '',
-      totalAmount: this.availabilityResult?.totalPrice || 0
+      totalAmount: this.availabilityResult?.totalPrice || 0,
+      totalAmountARS: this.priceInfo.amountARS,
+      exchangeRate: this.priceInfo.exchangeRate
     };
 
-    console.log('🚀 Iniciando Checkout Pro:', reservationData);
+    console.log('🚀 Datos completos a enviar:', reservationData);
 
     this.isProcessingCheckout = true;
     this.checkoutError = null;
