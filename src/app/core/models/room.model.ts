@@ -8,7 +8,7 @@ export interface Room {
   pricePerNight: number;
   size: number;
   beds: string;
-  amenities: string[];
+  amenities: { name: string, icon?: string }[];
   available: boolean;
   order: number;
   createdAt: string;
