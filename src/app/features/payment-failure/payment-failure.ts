@@ -8,31 +8,36 @@ import { PaymentService } from '../../core/services/payment.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-          <div class="card shadow">
-            <div class="card-body text-center p-5">
+    <div class="payment-failure-page">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg">
+              <div class="card-body text-center p-4 p-md-5">
               
               <!-- Loading State -->
               <div *ngIf="isLoading" class="mb-4">
-                <div class="spinner-border text-danger mb-3" role="status">
+                <div class="spinner-border text-danger mb-4" role="status">
                   <span class="visually-hidden">Verificando pago...</span>
                 </div>
-                <h3>Verificando el estado del pago...</h3>
+                <h3 class="mb-3">Verificando el estado del pago...</h3>
                 <p class="text-muted">Por favor espera mientras confirmamos la información.</p>
               </div>
 
               <!-- Failure State -->
               <div *ngIf="!isLoading">
                 <div class="text-danger mb-4">
-                  <i class="fas fa-times-circle" style="font-size: 4rem;"></i>
+                  <i class="fas fa-times-circle" style="font-size: 5rem;"></i>
                 </div>
                 <h2 class="text-danger mb-3">Pago No Completado</h2>
                 <p class="lead mb-4">Tu pago no pudo ser procesado exitosamente.</p>
                 
-                <div class="alert alert-danger" *ngIf="errorMessage">
-                  <strong>Motivo:</strong> {{ errorMessage }}
+                <div class="alert alert-danger d-flex align-items-center mb-4" *ngIf="errorMessage">
+                  <i class="fas fa-exclamation-circle fs-4 me-3"></i>
+                  <div class="text-start">
+                    <strong>Motivo del rechazo</strong><br>
+                    <small>{{ errorMessage }}</small>
+                  </div>
                 </div>
                 
                 <div class="alert alert-info">
@@ -63,12 +68,12 @@ import { PaymentService } from '../../core/services/payment.service';
                   </p>
                 </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
                   <a routerLink="/reservar" class="btn btn-primary btn-lg">
                     <i class="fas fa-redo me-2"></i>
                     Intentar Nuevamente
                   </a>
-                  <a routerLink="/contacto" class="btn btn-outline-secondary btn-lg">
+                  <a routerLink="/contacto" class="btn btn-outline-danger btn-lg">
                     <i class="fas fa-headset me-2"></i>
                     Contactar Soporte
                   </a>
@@ -88,25 +93,84 @@ import { PaymentService } from '../../core/services/payment.service';
     </div>
   `,
   styles: [`
+    .payment-failure-page {
+      min-height: calc(100vh - 200px);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 60px 0;
+    }
+
     .card {
       border: none;
-      border-radius: 15px;
+      border-radius: 20px;
+      overflow: hidden;
     }
+
+    .card-body {
+      background: white;
+    }
+
     .fas {
-      opacity: 0.8;
+      opacity: 0.9;
     }
+
     .btn-lg {
-      padding: 12px 30px;
-      border-radius: 25px;
+      padding: 14px 35px;
+      border-radius: 30px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
     }
+
+    .btn-lg:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+      border-width: 0.3rem;
+    }
+
     .alert {
-      border-radius: 10px;
+      border-radius: 12px;
+      border: none;
     }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+    }
+
+    h3, h6 {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 600;
+    }
+
+    .lead {
+      font-size: 1.15rem;
+      color: #6c757d;
+    }
+
     .list-unstyled li {
       transition: all 0.2s ease;
+      font-size: 0.95rem;
     }
+
     .list-unstyled li:hover {
       transform: translateX(5px);
+    }
+
+    @media (max-width: 768px) {
+      .payment-failure-page {
+        padding: 30px 0;
+      }
+      
+      .btn-lg {
+        padding: 12px 25px;
+        font-size: 0.9rem;
+      }
     }
   `]
 })
