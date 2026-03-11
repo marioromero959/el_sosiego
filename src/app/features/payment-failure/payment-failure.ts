@@ -69,11 +69,11 @@ import { PaymentService } from '../../core/services/payment.service';
                 </div>
 
                 <div class="d-grid gap-3 d-md-flex justify-content-md-center">
-                  <a routerLink="/reservar" class="btn btn-primary btn-lg">
+                  <a routerLink="/reservar" class="btn btn-primary">
                     <i class="fas fa-redo me-2"></i>
                     Intentar Nuevamente
                   </a>
-                  <a routerLink="/contacto" class="btn btn-outline-danger btn-lg">
+                  <a routerLink="/contacto" class="btn btn-outline-danger">
                     <i class="fas fa-headset me-2"></i>
                     Contactar Soporte
                   </a>
@@ -96,7 +96,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .payment-failure-page {
       min-height: calc(100vh - 200px);
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      padding: 60px 0;
+      padding: 140px 0 60px;
     }
 
     .card {
@@ -111,6 +111,18 @@ import { PaymentService } from '../../core/services/payment.service';
 
     .fas {
       opacity: 0.9;
+    }
+
+    .btn {
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
 
     .btn-lg {
@@ -164,7 +176,12 @@ import { PaymentService } from '../../core/services/payment.service';
 
     @media (max-width: 768px) {
       .payment-failure-page {
-        padding: 30px 0;
+        padding: 100px 0 30px;
+      }
+      
+      .btn {
+        padding: 8px 20px;
+        font-size: 0.9rem;
       }
       
       .btn-lg {
@@ -204,6 +221,9 @@ export class PaymentFailureComponent implements OnInit {
         this.verifyPayment();
       } else {
         this.isLoading = false;
+        if (!this.errorMessage) {
+          this.errorMessage = 'No se encontró información de pago en esta página.';
+        }
       }
     });
   }

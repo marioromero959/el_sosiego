@@ -315,7 +315,7 @@ import { es } from 'date-fns/locale';
     .reservation-lookup-container {
       min-height: 100vh;
       background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      padding: 2rem 0;
+      padding: 140px 0 60px;
     }
 
     .card {
@@ -353,6 +353,10 @@ import { es } from 'date-fns/locale';
     }
 
     @media (max-width: 768px) {
+      .reservation-lookup-container {
+        padding: 100px 0 30px;
+      }
+      
       .border-end {
         border-right: none !important;
         border-bottom: 1px solid #dee2e6 !important;

@@ -60,11 +60,11 @@ import { PaymentService } from '../../core/services/payment.service';
 
                 <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-4">
                   <button 
-                    class="btn btn-success btn-lg"
+                    class="btn btn-success"
                     (click)="navigateToReservationLookup()">
                     <i class="fas fa-search me-2"></i>Ver Mi Reserva
                   </button>
-                  <a routerLink="/" class="btn btn-outline-secondary btn-lg">
+                  <a routerLink="/" class="btn btn-outline-secondary">
                     <i class="fas fa-home me-2"></i>Volver al Inicio
                   </a>
                 </div>
@@ -95,37 +95,42 @@ import { PaymentService } from '../../core/services/payment.service';
 
                 <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-4">
                   <button 
-                    class="btn btn-warning btn-lg text-dark"
+                    class="btn btn-warning text-dark"
                     (click)="navigateToReservationLookup()">
                     <i class="fas fa-search me-2"></i>Consultar Estado
                   </button>
-                  <a routerLink="/" class="btn btn-outline-secondary btn-lg">
+                  <a routerLink="/" class="btn btn-outline-secondary">
                     <i class="fas fa-home me-2"></i>Volver al Inicio
                   </a>
                 </div>
               </div>
 
               <!-- Error State -->
-              <div *ngIf="!isLoading && (!paymentResult || paymentResult.status === 'rejected')">
+              <div *ngIf="!isLoading && (!paymentResult || paymentResult.status === 'rejected' || paymentResult.status === 'error')">
                 <div class="text-danger mb-4">
                   <i class="fas fa-exclamation-triangle" style="font-size: 5rem;"></i>
                 </div>
                 <h2 class="text-danger mb-3">Error en la Verificación</h2>
-                <p class="lead mb-4">No pudimos verificar el estado de tu pago.</p>
+                <p class="lead mb-4">{{ errorMessage || 'No pudimos verificar el estado de tu pago.' }}</p>
                 
                 <div class="alert alert-danger d-flex align-items-center">
                   <i class="fas fa-headset fs-4 me-3"></i>
                   <div class="text-start">
-                    <strong>Necesitas ayuda?</strong><br>
-                    <small>Contacta con soporte o intenta realizar la reserva nuevamente.</small>
+                    <strong>¿Necesitas ayuda?</strong><br>
+                    <small>Si realizaste el pago, verifica tu reserva en "Mi Reserva" con tu email. Si el problema persiste, contacta con soporte.</small>
                   </div>
                 </div>
 
                 <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-4">
-                  <a routerLink="/reservar" class="btn btn-primary btn-lg">
-                    <i class="fas fa-redo me-2"></i>Intentar Nuevamente
+                  <button 
+                    class="btn btn-warning text-dark"
+                    (click)="navigateToReservationLookup()">
+                    <i class="fas fa-search me-2"></i>Buscar Mi Reserva
+                  </button>
+                  <a routerLink="/reservar" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i>Nueva Reserva
                   </a>
-                  <a routerLink="/contacto" class="btn btn-outline-danger btn-lg">
+                  <a routerLink="/contacto" class="btn btn-outline-danger">
                     <i class="fas fa-headset me-2"></i>Contactar Soporte
                   </a>
                 </div>
@@ -140,7 +145,7 @@ import { PaymentService } from '../../core/services/payment.service';
     .payment-success-page {
       min-height: calc(100vh - 200px);
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      padding: 60px 0;
+      padding: 140px 0 60px;
     }
 
     .card {
@@ -161,6 +166,18 @@ import { PaymentService } from '../../core/services/payment.service';
 
     .fas {
       opacity: 0.9;
+    }
+
+    .btn {
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
 
     .btn-lg {
@@ -200,7 +217,12 @@ import { PaymentService } from '../../core/services/payment.service';
 
     @media (max-width: 768px) {
       .payment-success-page {
-        padding: 30px 0;
+        padding: 100px 0 30px;
+      }
+      
+      .btn {
+        padding: 8px 20px;
+        font-size: 0.9rem;
       }
       
       .btn-lg {
@@ -214,6 +236,7 @@ export class PaymentSuccessComponent implements OnInit {
   isLoading = true;
   paymentResult: any = null;
   preferenceId: string | null = null;
+  errorMessage: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -229,7 +252,10 @@ export class PaymentSuccessComponent implements OnInit {
       if (this.preferenceId) {
         this.verifyPayment();
       } else {
+        // Si no hay preferenceId, mostrar error
         this.isLoading = false;
+        this.paymentResult = { status: 'error' };
+        this.errorMessage = 'No se encontró información de pago en esta página.';
         console.error('No preference ID found in URL parameters');
       }
     });
@@ -251,6 +277,7 @@ export class PaymentSuccessComponent implements OnInit {
         console.error('Error verifying payment:', error);
         this.isLoading = false;
         this.paymentResult = { status: 'error' };
+        this.errorMessage = error.error?.message || 'No se pudo verificar el estado del pago. Por favor, verifica tu reserva en "Mi Reserva".';
       }
     });
   }
