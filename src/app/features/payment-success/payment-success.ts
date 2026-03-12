@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { PaymentService } from '../../core/services/payment.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-payment-success',
@@ -241,40 +242,59 @@ export class PaymentSuccessComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private paymentService: PaymentService
+    private http: HttpClient  // Usar HttpClient directamente
   ) {}
 
   ngOnInit(): void {
-    // Obtener el preferenceId de los parámetros de consulta
     this.route.queryParams.subscribe(params => {
-      this.preferenceId = params['preference_id'] || params['id'];
+      console.log('🔍 URL Params recibidos:', params);
+      
+      // ✅ PRIORIZAR external_reference (ID de reserva real)
+      this.preferenceId = params['external_reference'] || 
+                          params['preference_id'] || 
+                          params['id'];
       
       if (this.preferenceId) {
-        this.verifyPayment();
+        // Pasar todos los params relevantes al verify
+        this.verifyPayment(params);
       } else {
-        // Si no hay preferenceId, mostrar error
         this.isLoading = false;
         this.paymentResult = { status: 'error' };
         this.errorMessage = 'No se encontró información de pago en esta página.';
-        console.error('No preference ID found in URL parameters');
       }
     });
   }
 
-  private verifyPayment(): void {
+  private verifyPayment(mercadoPagoParams: any): void {
     if (!this.preferenceId) return;
 
-    this.paymentService.verifyPaymentStatus(this.preferenceId).subscribe({
+    // Construir query string con los parámetros de MercadoPago
+    const queryParams = new URLSearchParams();
+    if (mercadoPagoParams['payment_id']) {
+      queryParams.append('payment_id', mercadoPagoParams['payment_id']);
+    }
+    if (mercadoPagoParams['external_reference']) {
+      queryParams.append('external_reference', mercadoPagoParams['external_reference']);
+    }
+    
+    const url = `${environment.apiUrl}/api/payments/verify/${this.preferenceId}?${queryParams.toString()}`;
+    
+    console.log('📞 Calling verify endpoint:', url);
+
+    this.http.get<any>(url).subscribe({
       next: (result) => {
-        console.log('Payment verification result:', result);
+        console.log('✅ Payment verification result:', result);
         this.paymentResult = result.data;
         this.isLoading = false;
         
-        // Limpiar parámetros de URL
-        this.paymentService.cleanUrlParams();
+        // Limpiar parámetros de URL (opcional)
+        this.router.navigate([], {
+          queryParams: {},
+          replaceUrl: true
+        });
       },
       error: (error) => {
-        console.error('Error verifying payment:', error);
+        console.error('❌ Error verifying payment:', error);
         this.isLoading = false;
         this.paymentResult = { status: 'error' };
         this.errorMessage = error.error?.message || 'No se pudo verificar el estado del pago. Por favor, verifica tu reserva en "Mi Reserva".';
