@@ -249,12 +249,10 @@ export class PaymentSuccessComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       console.log('🔍 URL Params recibidos:', params);
       
-      // ✅ PRIORIZAR external_reference (ID de reserva real)
-      this.preferenceId = params['external_reference'] || 
-                          params['preference_id'] || 
-                          params['id'];
+      // ✅ Verificar que haya payment_id (parámetro más confiable)
+      const paymentId = params['payment_id'] || params['collection_id'];
       
-      if (this.preferenceId) {
+      if (paymentId) {
         // Pasar todos los params relevantes al verify
         this.verifyPayment(params);
       } else {
@@ -266,18 +264,12 @@ export class PaymentSuccessComponent implements OnInit {
   }
 
   private verifyPayment(mercadoPagoParams: any): void {
-    if (!this.preferenceId) return;
-
-    // Construir query string con los parámetros de MercadoPago
-    const queryParams = new URLSearchParams();
-    if (mercadoPagoParams['payment_id']) {
-      queryParams.append('payment_id', mercadoPagoParams['payment_id']);
-    }
-    if (mercadoPagoParams['external_reference']) {
-      queryParams.append('external_reference', mercadoPagoParams['external_reference']);
-    }
+    const paymentId = mercadoPagoParams['payment_id'] || mercadoPagoParams['collection_id'];
     
-    const url = `${environment.apiUrl}/payments/verify/${this.preferenceId}?${queryParams.toString()}`;
+    if (!paymentId) return;
+
+    // Usar endpoint con payment_id (más confiable que preference_id)
+    const url = `${environment.apiUrl}/payments/verify/0?payment_id=${paymentId}`;
     
     console.log('📞 Calling verify endpoint:', url);
 
