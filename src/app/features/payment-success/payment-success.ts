@@ -246,16 +246,37 @@ export class PaymentSuccessComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // ✅ Leer parámetros directamente de la URL como fallback
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlPaymentId = urlParams.get('payment_id') || urlParams.get('collection_id');
+    
+    console.log('🔍 URL completa:', window.location.href);
+    console.log('🔍 Payment ID de URL directa:', urlPaymentId);
+    
+    // Si hay paymentId en la URL, verificar inmediatamente
+    if (urlPaymentId) {
+      console.log('✅ Payment ID encontrado en URL, verificando...');
+      const paramsObj: any = {};
+      urlParams.forEach((value, key) => {
+        paramsObj[key] = value;
+      });
+      this.verifyPayment(paramsObj);
+      return;
+    }
+    
+    // Fallback: usar route.queryParams
     this.route.queryParams.subscribe(params => {
-      console.log('🔍 URL Params recibidos:', params);
+      console.log('🔍 Route queryParams recibidos:', params);
       
-      // ✅ Verificar que haya payment_id (parámetro más confiable)
       const paymentId = params['payment_id'] || params['collection_id'];
       
       if (paymentId) {
-        // Pasar todos los params relevantes al verify
+        console.log('✅ Payment ID encontrado en route params:', paymentId);
+        this.isLoading = true;
         this.verifyPayment(params);
-      } else {
+      } else if (!urlPaymentId) {
+        // Solo mostrar error si tampoco había en la URL directa
+        console.error('❌ No se encontró payment_id en ningún lado');
         this.isLoading = false;
         this.paymentResult = { status: 'error' };
         this.errorMessage = 'No se encontró información de pago en esta página.';
@@ -268,22 +289,23 @@ export class PaymentSuccessComponent implements OnInit {
     
     if (!paymentId) return;
 
-    // Usar endpoint con payment_id (más confiable que preference_id)
-    const url = `${environment.apiUrl}/payments/verify/0?payment_id=${paymentId}`;
+    // Usar HttpParams para construir correctamente los query parameters
+    const url = `${environment.apiUrl}/payments/verify/0`;
+    const params = { payment_id: paymentId };
     
-    console.log('📞 Calling verify endpoint:', url);
+    console.log('📞 Calling verify endpoint:', url, 'with params:', params);
 
-    this.http.get<any>(url).subscribe({
+    this.http.get<any>(url, { params }).subscribe({
       next: (result) => {
         console.log('✅ Payment verification result:', result);
         this.paymentResult = result.data;
         this.isLoading = false;
         
-        // Limpiar parámetros de URL (opcional)
-        this.router.navigate([], {
-          queryParams: {},
-          replaceUrl: true
-        });
+        // NO limpiar parámetros para evitar problemas con refresh
+        // this.router.navigate([], {
+        //   queryParams: {},
+        //   replaceUrl: true
+        // });
       },
       error: (error) => {
         console.error('❌ Error verifying payment:', error);
