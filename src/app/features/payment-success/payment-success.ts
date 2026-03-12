@@ -277,7 +277,7 @@ export class PaymentSuccessComponent implements OnInit {
       queryParams.append('external_reference', mercadoPagoParams['external_reference']);
     }
     
-    const url = `${environment.apiUrl}/api/payments/verify/${this.preferenceId}?${queryParams.toString()}`;
+    const url = `${environment.apiUrl}/payments/verify/${this.preferenceId}?${queryParams.toString()}`;
     
     console.log('📞 Calling verify endpoint:', url);
 
