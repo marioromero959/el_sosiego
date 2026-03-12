@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ReservationService } from '../../core/services/reservation.service';
 
 @Component({
   selector: 'app-payment-success',
@@ -242,7 +243,8 @@ export class PaymentSuccessComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient  // Usar HttpClient directamente
+    private http: HttpClient,  // Usar HttpClient directamente
+    private reservationService: ReservationService
   ) {}
 
   ngOnInit(): void {
@@ -300,7 +302,12 @@ export class PaymentSuccessComponent implements OnInit {
         console.log('✅ Payment verification result:', result);
         this.paymentResult = result.data;
         this.isLoading = false;
+        //Enviar email de confirmación automáticamente
+        if (this.paymentResult.reservationId) {
+          this.sendConfirmationEmail(this.paymentResult.reservationId);
+        }
         
+        // 
         // NO limpiar parámetros para evitar problemas con refresh
         // this.router.navigate([], {
         //   queryParams: {},
@@ -312,6 +319,19 @@ export class PaymentSuccessComponent implements OnInit {
         this.isLoading = false;
         this.paymentResult = { status: 'error' };
         this.errorMessage = error.error?.message || 'No se pudo verificar el estado del pago. Por favor, verifica tu reserva en "Mi Reserva".';
+      }
+    });
+  }
+
+  private sendConfirmationEmail(reservationId: number): void {
+    console.log('📧 Sending confirmation email for reservation:', reservationId);
+    
+    this.reservationService.sendConfirmationEmail(reservationId).subscribe({
+      next: (response) => {
+        console.log('✅ Email sent successfully:', response);
+      },
+      error: (error) => {
+        console.error('❌ Error sending confirmation email:', error);
       }
     });
   }
