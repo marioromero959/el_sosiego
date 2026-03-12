@@ -85,7 +85,9 @@
               <span><i class="fas fa-user"></i> {{room.capacity}} Personas</span>
               <span><i class="fas fa-bed"></i> {{room.beds}}</span>
               <span *ngIf="room.amenities && room.amenities.length > 0">
-                <i class="fas fa-mountain"></i> {{room.amenities[0]}}
+                <ng-container *ngFor="let amenity of room.amenities">
+                  <i class="fas fa-check-circle"></i> {{amenity.name}}
+                </ng-container>
               </span>
             </div>
             <p class="card-text">{{room.description}}</p>
