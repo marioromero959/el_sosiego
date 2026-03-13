@@ -343,7 +343,28 @@ export class ReservationFormComponent implements OnInit {
     if (!this.selectedCheckIn || !this.selectedCheckOut) {
       return;
     }
-    
+
+    // Guardia de fecha: verificar que check-in sea válido según la configuración
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    const minCI = new Date(todayMidnight);
+    minCI.setDate(todayMidnight.getDate() + this.paymentService.minAdvanceDays);
+    const checkInMidnight = new Date(this.selectedCheckIn);
+    checkInMidnight.setHours(0, 0, 0, 0);
+
+    if (isBefore(checkInMidnight, minCI)) {
+      const adv = this.paymentService.minAdvanceDays;
+      this.showAlert({
+        title: 'Fecha No Válida',
+        message: adv <= 1
+          ? 'La fecha de llegada debe ser a partir de mañana.'
+          : `Las reservas deben realizarse con al menos ${adv} días de anticipación.`,
+        type: 'warning'
+      });
+      this.resetDateSelection();
+      return;
+    }
+
     // Verificar disponibilidad final antes de proceder
     this.isLoading = true;
     this.reservationService.checkDateRangeAvailability(
@@ -450,8 +471,11 @@ export class ReservationFormComponent implements OnInit {
     if (!this.currentMonth) return [];
     
     // Create dates ensuring they're in the correct timezone
+    const minAdvanceDays = this.paymentService.minAdvanceDays;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const minCheckIn = new Date(today);
+    minCheckIn.setDate(today.getDate() + minAdvanceDays);
 
     const days = this.currentMonth.days.map(day => {
       // Handle date which can be either string or Date
@@ -465,8 +489,8 @@ export class ReservationFormComponent implements OnInit {
         date = new Date(day.date);
       }
       
-      // Disable today and past dates
-      const available = day.available && isAfter(date, today);
+      // Disable days before minimum check-in date
+      const available = day.available && !isBefore(date, minCheckIn);
 
       return {
         ...day,

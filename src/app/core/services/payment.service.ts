@@ -51,6 +51,11 @@ export class PaymentService {
   private mp: any = null;
   private isInitialized = false;
   private publicKey: string | undefined;
+  private _minAdvanceDays: number = 1;
+
+  get minAdvanceDays(): number {
+    return this._minAdvanceDays;
+  }
 
   constructor(
     private http: HttpClient,
@@ -82,6 +87,9 @@ export class PaymentService {
     try {
       const config = await this.http.get<any>(`${this.apiUrl}/payments/config`).toPromise();
       this.publicKey = config.data.publicKey;
+      if (typeof config.data.minAdvanceDays === 'number') {
+        this._minAdvanceDays = config.data.minAdvanceDays;
+      }
     } catch (error) {
       console.error('Error loading config:', error);
       throw error;
