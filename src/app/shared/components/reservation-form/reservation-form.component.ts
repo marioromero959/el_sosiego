@@ -450,6 +450,9 @@ export class ReservationFormComponent implements OnInit {
     if (!this.currentMonth) return [];
     
     // Create dates ensuring they're in the correct timezone
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const days = this.currentMonth.days.map(day => {
       // Handle date which can be either string or Date
       let date: Date;
@@ -462,9 +465,13 @@ export class ReservationFormComponent implements OnInit {
         date = new Date(day.date);
       }
       
+      // Disable today and past dates
+      const available = day.available && isAfter(date, today);
+
       return {
         ...day,
-        date
+        date,
+        available
       };
     });
 
