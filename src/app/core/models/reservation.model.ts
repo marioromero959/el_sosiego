@@ -76,6 +76,7 @@ export interface ReservationNew {
   specialRequests?: string;
   totalPrice: number;
   statusReservation: 'pending' | 'confirmed' | 'cancelled';
+  paymentStatus?: 'pending' | 'processing' | 'paid' | 'failed' | 'refunded';
   confirmationCode?: string;
   emailSent?: boolean;
   emailSentAt?: Date;

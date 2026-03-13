@@ -215,12 +215,12 @@ import { es } from 'date-fns/locale';
                   
                   <div class="col-md-6 text-md-end">
                     <p class="mb-1">
-                      <span class="badge bg-warning text-dark">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Pago al llegar
+                      <span class="badge" [ngClass]="getPaymentBadgeClass(foundReservation.paymentStatus)">
+                        <i class="fas me-1" [ngClass]="getPaymentBadgeIcon(foundReservation.paymentStatus)"></i>
+                        {{ getPaymentStatusText(foundReservation.paymentStatus) }}
                       </span>
                     </p>
-                    <small class="text-muted">
+                    <small class="text-muted" *ngIf="foundReservation.paymentStatus !== 'paid'">
                       Aceptamos efectivo y transferencias
                     </small>
                   </div>
@@ -523,6 +523,39 @@ export class ReservationLookupComponent implements OnInit {
       'cancelled': 'bg-danger'
     };
     return classMap[status] || 'bg-secondary';
+  }
+
+  getPaymentStatusText(status?: string): string {
+    const map: {[key: string]: string} = {
+      'paid': 'Pagado',
+      'pending': 'Pago al llegar',
+      'processing': 'Procesando pago',
+      'failed': 'Pago fallido',
+      'refunded': 'Reembolsado'
+    };
+    return map[status ?? ''] ?? 'Pago al llegar';
+  }
+
+  getPaymentBadgeClass(status?: string): string {
+    const map: {[key: string]: string} = {
+      'paid': 'bg-success',
+      'pending': 'bg-warning text-dark',
+      'processing': 'bg-info text-dark',
+      'failed': 'bg-danger',
+      'refunded': 'bg-secondary'
+    };
+    return map[status ?? ''] ?? 'bg-warning text-dark';
+  }
+
+  getPaymentBadgeIcon(status?: string): string {
+    const map: {[key: string]: string} = {
+      'paid': 'fa-check-circle',
+      'pending': 'fa-info-circle',
+      'processing': 'fa-spinner',
+      'failed': 'fa-times-circle',
+      'refunded': 'fa-undo'
+    };
+    return map[status ?? ''] ?? 'fa-info-circle';
   }
 
   private markFormGroupTouched(): void {
