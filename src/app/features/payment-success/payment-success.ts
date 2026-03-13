@@ -56,6 +56,7 @@ import { ReservationService } from '../../core/services/reservation.service';
                   <i class="fas fa-envelope fs-4 me-3"></i>
                   <div class="text-start">
                     <strong>Confirmación enviada</strong><br>
+                    <strong>Si no encontras el mail no te olvides de revisar tu carpeta de spam</strong><br>
                     <small>Revisa tu email con todos los detalles de tu reserva.</small>
                   </div>
                 </div>
