@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://el-sosiego-back.onrender.com/api',
-  strapiUrl: 'https://el-sosiego-back.onrender.com',
+  apiUrl: 'http://181.90.149.146/api',
+  strapiUrl: 'http://181.90.149.146',
 };
