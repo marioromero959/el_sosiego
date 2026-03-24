@@ -1,0 +1,26 @@
+name: Deploy el_sosiego
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /home/xlr8/.openclaw/workspace/el_sosiego
+            git pull
+            npm ci
+            npm run build
+            rsync -a --delete dist/country-house/ /var/www/el_sosiego/
